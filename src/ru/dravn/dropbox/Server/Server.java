@@ -19,7 +19,6 @@ public class Server {
     public Server()
     {
 
-
         try (ServerSocket serverSocket = new ServerSocket(8189))
         {
             clients = new Vector<>();
@@ -41,6 +40,7 @@ public class Server {
         }
         catch (SQLException | ClassNotFoundException e)
         {
+            System.out.println(e);
             System.out.println("Не удалось запустить сервис авторизации");
         }
         finally
@@ -52,17 +52,14 @@ public class Server {
     public void subscribe(ClientHandler clientHandler)
     {
         clients.add(clientHandler);
-        broadcostClientList();
+        broadcastClientList();
     }
 
-    public void unsubscribe(ClientHandler clientHandler)
+    public void unSubscribe(ClientHandler clientHandler)
     {
         clients.remove(clientHandler);
-        broadcostClientList();
+        broadcastClientList();
     }
-
-
-
 
 
     public boolean isNickBusy(String nick)
@@ -98,7 +95,7 @@ public class Server {
         from.sendMsg("Пользоватьель с ником "+to+ " не найден");
     }
 
-     public void broadcostClientList()
+     public void broadcastClientList()
      {
          StringBuilder sb=new StringBuilder("/clientslist ");
          for (ClientHandler o: clients)

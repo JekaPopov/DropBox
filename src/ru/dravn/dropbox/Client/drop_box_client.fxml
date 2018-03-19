@@ -6,7 +6,6 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
@@ -21,9 +20,8 @@
     </HBox>
 
     <HBox fx:id="field" VBox.vgrow="ALWAYS">
-    <ListView fx:id="clientViewList" managed="false" onContextMenuRequested="#gameMenu" onMouseClicked="#clientsListClicked" visible="false" HBox.hgrow="ALWAYS" />
+    <ListView fx:id="clientViewList" managed="false"  onMouseClicked="#clientsListClicked" visible="false" HBox.hgrow="ALWAYS" />
     <TextArea fx:id="textArea" editable="false" HBox.hgrow="ALWAYS" />
-        <GridPane fx:id="gameField" gridLinesVisible="true" managed="false" visible="false" HBox.hgrow="ALWAYS" />
     </HBox>
 
     <HBox fx:id="msgPanel">

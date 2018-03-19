@@ -15,9 +15,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
@@ -28,8 +27,6 @@ import java.util.ResourceBundle;
 
 public class ClientController implements Initializable {
 
-    @FXML
-    GridPane gameField;
     @FXML
     HBox field;
     @FXML
@@ -50,10 +47,9 @@ public class ClientController implements Initializable {
 
     public boolean authorized;
     private Socket socket;
-    private DataOutputStream out;
-    private DataInputStream in;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
     private String myNick;
-    private String controlKey;
 
     private ObservableList<String> clientList;
 
@@ -71,8 +67,8 @@ public class ClientController implements Initializable {
         try
         {
             socket = new Socket(SERVER_IP, SERVER_PORT);
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
+
+            out = new ObjectOutputStream(socket.getOutputStream());
 
             clientList= FXCollections.observableArrayList();
             clientViewList.setItems(clientList);
@@ -109,12 +105,21 @@ public class ClientController implements Initializable {
 
             Thread t = new Thread(() ->
             {
+                try {
+                    in = new ObjectInputStream(socket.getInputStream());
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 try
                 {
                     while(true)
                     {
-                        String s = null;
-                        s=in.readUTF();
+                        Object o = in.readObject();
+                        String s = o.toString();
+
+                        System.out.println(s);
                         if(s.startsWith("/"))
                         {
                             if (s.startsWith("/authok "))
@@ -146,12 +151,14 @@ public class ClientController implements Initializable {
                         textArea.appendText(s + "\n");
                         }
                     }
+
                 }
                 catch (IOException e)
                 {
                     showAlert("Сервер перестал отвечать");
-                }
-                finally
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } finally
                 {
                     setAuthorized(false);
                     try
@@ -182,11 +189,13 @@ public class ClientController implements Initializable {
             if(textField.getText().startsWith("Лично "))
             {
                 String[] data = textField.getText().split("\\s", 4);
-                out.writeUTF("/w "+data[1]+" "+data[2]);
+                out.writeObject("/w "+data[1]+" "+data[2]);
+                out.flush();
             }
             else
             {
-                out.writeUTF(textField.getText());
+                out.writeObject(textField.getText());
+                out.flush();
             }
         }
         catch (IOException e)
@@ -211,7 +220,14 @@ public class ClientController implements Initializable {
             connect();
         }
         try {// /auth login pass
-            out.writeUTF("/auth " + loginField.getText() + " " + passField.getText());
+            /*ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+            outputStream.writeObject(s);
+            outputStream.flush();*/
+
+            String s = "/auth " + loginField.getText() + " " + passField.getText();
+            System.out.println(s);
+            out.writeObject("/auth " + loginField.getText() + " " + passField.getText());
+            out.flush();
             loginField.clear();
             passField.clear();
         } catch (IOException e) {
@@ -257,86 +273,6 @@ public class ClientController implements Initializable {
             textField.requestFocus();
             textField.selectEnd();
         }
-    }
-
-    public void gameMenu(ContextMenuEvent contextMenuEvent) {
-
-        Platform.runLater(new Runnable(){
-
-            @Override
-            public void run() {
-                List<String> choices = new ArrayList<>();
-                choices.add("3х3");
-                choices.add("4х4");
-                choices.add("5х5");
-                choices.add("6х6");
-
-                ChoiceDialog<String> settings = new ChoiceDialog<>("3х3", choices);
-
-                settings.setTitle("Настройки игры крестики нолики");
-                settings.setHeaderText("Выберите параметры");
-                settings.setContentText("Выберите размер поля: ");
-
-
-                Optional<String> fieldRes = settings.showAndWait();
-
-
-
-
-                if (fieldRes.isPresent())
-                {
-
-                    System.out.println("Your choice: " + fieldRes.get());
-                    int fieldSize=0;
-
-                    switch (fieldRes.get())
-                    {
-                        case"3х3" :
-                            fieldSize=3;
-                            break;
-                        case"4х4" :
-                            fieldSize=4;
-                            break;
-                        case"5х5" :
-                            fieldSize=5;
-                            break;
-                        case"6х6" :
-                            fieldSize=6;
-                            break;
-                    }
-
-
-
-
-                    System.out.println(fieldSize);
-
-                    settings = new ChoiceDialog<>("X","X","0");
-
-                    settings.setTitle("Настройки игры крестики нолики");
-                    settings.setHeaderText("Выберите параметры");
-                    settings.setContentText("Выберите X или O: ");
-
-                    fieldRes = settings.showAndWait();
-                    if (fieldRes.isPresent()){
-                        System.out.println("Your choice: " + fieldRes.get());
-                        gameField(fieldSize);
-                    }
-                }
-
-        }
-        });
-    }
-
-    private void gameField(int size) {
-        for (int i = 0; i <size ; i++) {
-            for (int j = 0; j <size ; j++) {
-                Text rankTitle = new Text(i+" "+j );
-                gameField.add(rankTitle, i,j);
-            }
-
-        }
-    //gameField.setVisible(true);
-
     }
 }
 
