@@ -1,5 +1,6 @@
 package ru.dravn.dropbox.Server;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -52,13 +53,13 @@ public class Server {
     public void subscribe(ClientHandler clientHandler)
     {
         clients.add(clientHandler);
-        broadcastClientList();
+        //broadcastClientList();
     }
 
     public void unSubscribe(ClientHandler clientHandler)
     {
         clients.remove(clientHandler);
-        broadcastClientList();
+        //broadcastClientList();
     }
 
 
@@ -104,5 +105,6 @@ public class Server {
          }
          broadcastMsg(sb.toString());
      }
+
 
 }

@@ -27,6 +27,7 @@ import java.util.ResourceBundle;
 
 public class ClientController implements Initializable {
 
+
     @FXML
     HBox field;
     @FXML
@@ -43,7 +44,8 @@ public class ClientController implements Initializable {
     PasswordField passField;
     @FXML
     ListView<String> clientViewList;
-
+    @FXML
+    CheckBox reg;
 
     public boolean authorized;
     private Socket socket;
@@ -127,7 +129,7 @@ public class ClientController implements Initializable {
                             setAuthorized(true);
                             myNick = s.split("\\s")[1];
                             }
-                            else if (s.startsWith("/clientslist "))
+                            else if (s.startsWith("/fileList "))
                             {
                                 String[] data = s.split("\\s");
                                 Platform.runLater(() ->
@@ -210,6 +212,7 @@ public class ClientController implements Initializable {
 
     public void sendAuthMsg()
     {
+
         if(passField.getText().isEmpty()||loginField.getText().isEmpty())
         {
             showAlert("Введены неверные данные");
@@ -220,13 +223,14 @@ public class ClientController implements Initializable {
             connect();
         }
         try {// /auth login pass
-            /*ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-            outputStream.writeObject(s);
-            outputStream.flush();*/
-
-            String s = "/auth " + loginField.getText() + " " + passField.getText();
-            System.out.println(s);
-            out.writeObject("/auth " + loginField.getText() + " " + passField.getText());
+            if(reg.isSelected())
+            {
+                out.writeObject("/reg " + loginField.getText() + " " + passField.getText());
+            }
+            else
+            {
+                out.writeObject("/auth " + loginField.getText() + " " + passField.getText());
+            }
             out.flush();
             loginField.clear();
             passField.clear();
