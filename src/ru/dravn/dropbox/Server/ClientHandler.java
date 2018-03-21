@@ -1,119 +1,84 @@
 package ru.dravn.dropbox.Server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ClientHandler {
+
+
     private Server server;
     protected Socket socket;
-    private DataInputStream in;
-    private DataOutputStream out;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
     private String nick;
-    protected long time;
+    private boolean onLine;
 
+    ClientHandler(Server server, Socket socket)
+    {
+        this.server = server;
+        this.socket = socket;
+        this.onLine = true;
+        Authorization authorization = new Authorization(this);
 
-    ClientHandler(Server server, Socket socket) {
-        try {
-            this.server = server;
-            this.socket = socket;
-            this.in = new DataInputStream(socket.getInputStream());
-            this.out = new DataOutputStream(socket.getOutputStream());
-            time = System.currentTimeMillis();
-            stopTimer();
+        new Thread(() -> {
+            try {
 
-            new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        while (true)
+                in = new ObjectInputStream(socket.getInputStream());
+                out = new ObjectOutputStream(socket.getOutputStream());
+
+                while (onLine) {
+                    if(authorization.runAuth(receiveMsg()))break;
+                }
+
+                while (onLine) {
+                    Object request = in.readObject();
+                    if (request instanceof String) {
+                        String msg = request.toString();
+                        System.out.println(nick + ": " + msg);
+
+                        if (msg.startsWith("/File ")) {
+                            String[] data = msg.split("\\s");
+                            File file = new File("C:\\serv\\"+nick+"\\"+data[1]);
+                            out.writeObject(file);
+
+                        } else if (msg.equals("/end"))
                         {
-                            String msg = in.readUTF();
 
-                            if (msg.startsWith("/auth "))
-                            {
-                                String[] data = msg.split("\\s");
-                                String newNick = server.getAuthService().getNickByLoginAndPass(data[1], data[2]);
-
-
-                                if (newNick != null)
-                                {
-                                    if (!server.isNickBusy(newNick))
-                                    {
-                                        nick = newNick;
-                                        ClientHandler.this.sendMsg("/authok " + newNick);
-                                        server.subscribe(ClientHandler.this);
-                                        time = 0;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        ClientHandler.this.sendMsg("/alert Учетная запись занята");
-                                        time = System.currentTimeMillis();
-                                    }
-                                }
-                                else
-                                {
-                                    ClientHandler.this.sendMsg("/alert Hе верный логин или пароль");
-                                    time = System.currentTimeMillis();
-                                }
-                            }
-                        }
-
-                        while (true)
-                        {
-                            String msg = in.readUTF();
-                            System.out.println(nick + ": " + msg);
-                            if (msg.startsWith("/w "))
-                            {
-                                String[] data = msg.split("\\s", 3);
-                                server.privateMsg(data[2], ClientHandler.this, data[1]);
-                            }
-                            else if (msg.equals("/end")) break;
-                            else server.broadcastMsg(nick + ": " + msg);
-                        }
-                    }
-                    catch (IOException e)
-                    {
-
-                        e.printStackTrace();
-                    }
-                    finally
-                    {
-                        nick = null;
-                        server.unsubscribe(ClientHandler.this);
-                        try
-                        {
-                            socket.close();
-                        }
-                        catch (IOException e)
-                        {
-                            e.printStackTrace();
+                            stopConnection();
                         }
                     }
                 }
-            }).start();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            } finally {
+                stopConnection();
+            }
+        }).start();
     }
 
-    String getNick()
+    public Server getServer() {
+        return server;
+    }
+
+    public String getNick()
     {
         return nick;
     }
 
-    void sendMsg(String msg)
+    public void setNick(String nick) {
+        this.nick = nick;
+    }
+
+
+    public void sendMsg(String msg)
     {
+        if(socket.isClosed())return;
         try
         {
-            out.writeUTF(msg);
+            out.writeObject(msg);
+            System.out.println("out"+msg);
+            out.flush();
         }
         catch (IOException e)
         {
@@ -121,33 +86,32 @@ public class ClientHandler {
         }
     }
 
-    public void stopTimer()
-        {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run()
-                {
-                    while (true)
-                    {
-                        if(time==0)break;
+    public Object receiveMsg()
+    {
+        if(socket.isClosed())return null;
+            try {
+                return in.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        return null;
+    }
 
-                        if ((System.currentTimeMillis() - time) > 120000)
-                        {
-                            try
-                            {
-                                socket.close();
-                                break;
-                            }
-                            catch (IOException e)
-                            {
 
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-
-                }
-            });
-            thread.start();
+    public void stopConnection()
+    {
+        nick = null;
+        server.unSubscribe(ClientHandler.this);
+        try {
+            onLine = false;
+            System.out.println("ClientHandler.stopConnection");
+            sendMsg("/end");
+            in.close();
+            out.close();
+            socket.close();
+            this.finalize();
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
+    }
 }
