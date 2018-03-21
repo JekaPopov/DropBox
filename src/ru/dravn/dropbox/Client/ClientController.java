@@ -52,6 +52,7 @@ public class ClientController implements Initializable {
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private String myNick;
+    private boolean onLine;
 
     private ObservableList<String> clientList;
 
@@ -62,12 +63,14 @@ public class ClientController implements Initializable {
     public void initialize(URL location, ResourceBundle resources)
     {
         setAuthorized(false);
+        this.onLine = true;
     }
 
     public void connect()
     {
         try
         {
+            onLine = true;
             socket = new Socket(SERVER_IP, SERVER_PORT);
 
             out = new ObjectOutputStream(socket.getOutputStream());
@@ -107,16 +110,10 @@ public class ClientController implements Initializable {
 
             Thread t = new Thread(() ->
             {
-                try {
-                    in = new ObjectInputStream(socket.getInputStream());
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
                 try
                 {
-                    while(true)
+                    in = new ObjectInputStream(socket.getInputStream());
+                    while(onLine)
                     {
                         Object o = in.readObject();
                         String s = o.toString();
@@ -147,6 +144,10 @@ public class ClientController implements Initializable {
                                 String data[]=s.split("\\s",2);
                                 showAlert(data[1]);
                             }
+                            else if(s.startsWith("/end"))
+                            {
+                                onLine = false;
+                            }
                         }
                         else
                         {
@@ -162,15 +163,7 @@ public class ClientController implements Initializable {
                     e.printStackTrace();
                 } finally
                 {
-                    setAuthorized(false);
-                    try
-                    {
-                        socket.close();
-                    }
-                    catch (IOException e)
-                    {
-                        e.printStackTrace();
-                    }
+                    stopConnection();
                 }
             });
             t.setDaemon(true);
@@ -205,9 +198,12 @@ public class ClientController implements Initializable {
             e.printStackTrace();
             showAlert("Ошибка отправки сообщения");
         }
-        textArea.setWrapText(true);
-        textField.clear();
-        textField.requestFocus();
+        /*if(onLine)
+        {
+            textArea.setWrapText(true);
+            textField.clear();
+            textField.requestFocus();
+        }*/
     }
 
     public void sendAuthMsg()
@@ -229,6 +225,7 @@ public class ClientController implements Initializable {
             }
             else
             {
+                System.out.println("/auth " + loginField.getText() + " " + passField.getText());
                 out.writeObject("/auth " + loginField.getText() + " " + passField.getText());
             }
             out.flush();
@@ -278,6 +275,25 @@ public class ClientController implements Initializable {
             textField.selectEnd();
         }
     }
+
+    private void stopConnection()
+    {
+        setAuthorized(false);
+        try
+        {
+            textField.clear();
+            loginField.clear();
+            passField.clear();
+            in.close();
+            out.close();
+            socket.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
 }
 
 

@@ -7,9 +7,6 @@ public class AuthService {
     private static Connection connect;
     private static Statement stmt;
 
-
-
-
     public static void connect() throws ClassNotFoundException, SQLException
     {
         Class.forName("org.sqlite.JDBC");
@@ -22,7 +19,7 @@ public class AuthService {
     {
 
         stmt = connect.createStatement();
-        //stmt.execute("DROP TABLE IF EXISTS USERS");
+        stmt.execute("DROP TABLE IF EXISTS USERS");
 
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS " +
                 "USERS " +
@@ -46,19 +43,8 @@ public class AuthService {
         //System.out.println("Таблица заполнена");
     }
 
-    public void disconnect() {
-        try {
-            stmt.close();
-            connect.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 
-
-
-
-    public boolean login(String login, String pass){
+    public static boolean login(String login, String pass){
         try {
             ResultSet rs = stmt.executeQuery("SELECT PASS FROM USERS WHERE LOGIN ='" + login+"'");
             if (rs.next()){
@@ -72,7 +58,7 @@ public class AuthService {
         return false;
     }
 
-    public boolean registration(String login, String pass) {
+    public static boolean registration(String login, String pass) {
         try
         {
             if(checkLogin(login))
@@ -89,8 +75,17 @@ public class AuthService {
         return false;
     }
 
-    private boolean checkLogin(String login) throws SQLException {
+    private static boolean checkLogin(String login) throws SQLException {
         ResultSet rs = stmt.executeQuery("SELECT LOGIN FROM USERS WHERE  LOGIN ='" + login+"'");
         return !rs.next();
+    }
+
+    public static void disconnect() {
+        try {
+            stmt.close();
+            connect.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
