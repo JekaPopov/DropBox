@@ -56,7 +56,7 @@ public class Authorization {
         {
             System.out.println("auth: "+ Arrays.toString(data));
 
-            String folder = "C:\\serv\\"+data[1];
+            String folder = "C:\\_serv\\"+data[1];
             mHandler.setNick(data[1]);
             mHandler.sendMsg("/authok " + data[1]);
 

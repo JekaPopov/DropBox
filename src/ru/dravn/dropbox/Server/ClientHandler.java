@@ -1,8 +1,10 @@
 package ru.dravn.dropbox.Server;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class ClientHandler {
 
@@ -34,18 +36,24 @@ public class ClientHandler {
                 while (onLine) {
                     Object request = in.readObject();
                     if (request instanceof String) {
-                        String msg = request.toString();
-                        System.out.println(nick + ": " + msg);
+                        String[] data = ((String) request).split("\\s");
 
-                        if (msg.startsWith("/File ")) {
-                            String[] data = msg.split("\\s");
-                            File file = new File("C:\\serv\\"+nick+"\\"+data[1]);
-                            out.writeObject(file);
 
-                        } else if (msg.equals("/end"))
+
+                        switch (data[0])
                         {
-
-                            stopConnection();
+                            case ("/loadFile"):
+                            {
+                                System.out.println(nick + ": " + Arrays.toString(data));
+                                File file = new File("C:\\_serv\\"+nick+"\\"+data[1]);
+                                out.writeObject(file);
+                                break;
+                            }
+                            case ("/end"):
+                            {
+                                stopConnection();
+                                break;
+                            }
                         }
                     }
                 }
@@ -88,7 +96,8 @@ public class ClientHandler {
 
     public Object receiveMsg()
     {
-        if(socket.isClosed())return null;
+        if(socket.isClosed()
+                ||socket==null)return null;
             try {
                 return in.readObject();
             } catch (IOException | ClassNotFoundException e) {

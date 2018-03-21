@@ -63,10 +63,13 @@ public class AuthService {
         {
             if(checkLogin(login))
             {
-                String folder = "C:\\serv\\" + login;
+
+                String folder = "C:\\_serv\\" + login;
+
+
                 stmt.execute("INSERT INTO USERS (LOGIN, PASS, FOLDER) " +
                         "VALUES ('" + login + "', '" + pass + "','" + folder + "'); ");
-                new File(folder).mkdir();
+                new File(folder).mkdirs();
                 return true;
             }
         } catch (SQLException e) {

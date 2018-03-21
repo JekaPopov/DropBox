@@ -27,37 +27,35 @@ import java.util.ResourceBundle;
 
 public class ClientController implements Initializable {
 
-
+    @FXML
+    Button exitButton;
     @FXML
     HBox field;
     @FXML
-    HBox msgPanel;
-    @FXML
     HBox authorizedPanel;
-    @FXML
-    TextArea textArea;
-    @FXML
-    TextField textField;
     @FXML
     TextField loginField;
     @FXML
     PasswordField passField;
     @FXML
-    ListView<String> clientViewList;
+    ListView<String> serverFileViewList;
     @FXML
-    CheckBox reg;
+    ListView<String> clientFileViewList;
+    @FXML
+    CheckBox regCheck;
 
-    public boolean authorized;
     private Socket socket;
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    private String myNick;
+    private Client client;
     private boolean onLine;
 
-    private ObservableList<String> clientList;
+    private ObservableList<String> serverFileList;
+    private ObservableList<String> clientFileList;
 
-    final String SERVER_IP = "localhost";
-    final int SERVER_PORT = 8189;
+    private final String SERVER_IP = "localhost";
+    private final int SERVER_PORT = 8189;
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -75,10 +73,9 @@ public class ClientController implements Initializable {
 
             out = new ObjectOutputStream(socket.getOutputStream());
 
-            clientList= FXCollections.observableArrayList();
-            clientViewList.setItems(clientList);
-
-            clientViewList.setCellFactory(new Callback<ListView<String>, ListCell<String>>()
+            serverFileList = FXCollections.observableArrayList();
+            serverFileViewList.setItems(serverFileList);
+            serverFileViewList.setCellFactory(new Callback<ListView<String>, ListCell<String>>()
             {
                 @Override
                 public ListCell<String> call(ListView<String> param)
@@ -92,10 +89,32 @@ public class ClientController implements Initializable {
                             if (!empty)
                             {
                                 setText(item);
-                                if (item.equals(myNick))
-                                {
-                                    setStyle("-fx-font-weight: bold");
-                                }
+                            }
+                            else
+                            {
+                                setGraphic(null);
+                                setText(null);
+                            }
+                        }
+                    };
+                }
+            });
+
+            clientFileList = FXCollections.observableArrayList();
+            clientFileViewList.setItems(clientFileList);
+            clientFileViewList.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+                @Override
+                public ListCell<String> call(ListView<String> param)
+                {
+                    return new ListCell<String>()
+                    {
+                        @Override
+                        protected void updateItem(String item, boolean empty)
+                        {
+                            super.updateItem(item, empty);
+                            if (!empty)
+                            {
+                                setText(item);
                             }
                             else
                             {
@@ -113,62 +132,58 @@ public class ClientController implements Initializable {
                 try
                 {
                     in = new ObjectInputStream(socket.getInputStream());
+
                     while(onLine)
                     {
-                        Object o = in.readObject();
-                        String s = o.toString();
-
-                        System.out.println(s);
-                        if(s.startsWith("/"))
+                        Object request = receiveMsg();
+                        if(request instanceof String)
                         {
-                            if (s.startsWith("/authok "))
+                            String[] data =((String) request).split("\\s");
+                            switch (data[0])
                             {
-                            setAuthorized(true);
-                            myNick = s.split("\\s")[1];
-                            }
-                            else if (s.startsWith("/fileList "))
-                            {
-                                String[] data = s.split("\\s");
-                                Platform.runLater(() ->
+                                case("/authok"):
                                 {
-                                    clientList.clear();
+                                    setAuthorized(true);
+                                    client = new Client(data[1]);
 
-                                    for (int i = 1; i < data.length; i++)
-                                    {
-                                        clientList.addAll(data[i]);
-                                    }
-                                });
-                            }
-                            else if(s.startsWith("/alert "))
-                            {
-                                String data[]=s.split("\\s",2);
-                                showAlert(data[1]);
-                            }
-                            else if(s.startsWith("/end"))
-                            {
-                                onLine = false;
+                                    fillClientFileList();
+                                    break;
+                                }
+                                case ("/fileList"):
+                                {
+                                    fillServerFileList(data);
+                                    break;
+                                }
+                                case ("/alert"):
+                                {
+                                    showAlert(data);
+                                    break;
+                                }
+                                case("/end"):
+                                {
+                                    stopConnection();
+                                    break;
+                                }
                             }
                         }
-                        else
+                        else if(request instanceof File)
                         {
-                        textArea.appendText(s + "\n");
+                            System.out.println(((File) request).getName() + " " + ((File) request).getAbsolutePath());
+
                         }
                     }
-
                 }
                 catch (IOException e)
                 {
                     showAlert("Сервер перестал отвечать");
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                } finally
+                }
+                finally
                 {
                     stopConnection();
                 }
             });
             t.setDaemon(true);
             t.start();
-
         }
         catch (IOException e)
         {
@@ -176,114 +191,144 @@ public class ClientController implements Initializable {
         }
     }
 
+    private void fillServerFileList(String[] data) {
+        Platform.runLater(() -> {
+            serverFileList.clear();
+            for (int i = 1; i < data.length; i++) {
+                serverFileList.addAll(data[i]);
+            }
+        });
+    }
 
-    public void SendMessage()
+    private void fillClientFileList() {
+        if(FileHandler.getFolderList(client.getFolder())!=null)
+        {
+            Platform.runLater(() -> {
+                clientFileList.clear();
+                clientFileList.addAll(FileHandler.getFolderList(client.getFolder()));
+            });
+        }
+    }
+
+
+    private void sendMessage(String msg)
     {
         try
         {
-            if(textField.getText().startsWith("Лично "))
+            if (socket == null
+                    || socket.isClosed())
             {
-                String[] data = textField.getText().split("\\s", 4);
-                out.writeObject("/w "+data[1]+" "+data[2]);
-                out.flush();
+                connect();
             }
-            else
-            {
-                out.writeObject(textField.getText());
-                out.flush();
-            }
+
+            out.writeObject(msg);
+            out.flush();
         }
         catch (IOException e)
         {
             e.printStackTrace();
             showAlert("Ошибка отправки сообщения");
         }
-        /*if(onLine)
-        {
-            textArea.setWrapText(true);
-            textField.clear();
-            textField.requestFocus();
-        }*/
     }
 
-    public void sendAuthMsg()
+    public Object receiveMsg()
     {
+        if(socket.isClosed()||socket==null)return null;
 
-        if(passField.getText().isEmpty()||loginField.getText().isEmpty())
+        try {
+            return in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void authorizationAndRegistration()
+    {
+        if(passField.getText().isEmpty()
+                ||loginField.getText().isEmpty())
         {
             showAlert("Введены неверные данные");
             return;
         }
 
-        if (socket == null || socket.isClosed()){
-            connect();
+        if(regCheck.isSelected())
+        {
+            sendMessage("/reg " + loginField.getText() + " " + passField.getText());
         }
-        try {// /auth login pass
-            if(reg.isSelected())
-            {
-                out.writeObject("/reg " + loginField.getText() + " " + passField.getText());
-            }
-            else
-            {
-                System.out.println("/auth " + loginField.getText() + " " + passField.getText());
-                out.writeObject("/auth " + loginField.getText() + " " + passField.getText());
-            }
-            out.flush();
-            loginField.clear();
-            passField.clear();
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Ошибка авторизации");
+        else
+        {
+            sendMessage("/auth " + loginField.getText() + " " + passField.getText());
         }
+        loginField.clear();
+        passField.clear();
     }
 
 
 
-    private void showAlert(String msg)
+    private void showAlert(String ... msg)
     {
-        Platform.runLater(new Runnable(){
-
-            @Override
-            public void run() {
-                Alert alert =new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Возникли проблемы");
-                alert.setHeaderText(null);
-                alert.setContentText(msg);
-                alert.showAndWait();
-            }
+        for (int i = 2; i <msg.length ; i++) {
+            msg[1]+=msg[i]+" ";
+        }
+        Platform.runLater(() -> {
+            Alert alert =new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Возникли проблемы");
+            alert.setHeaderText(null);
+            alert.setContentText(msg[1]);
+            alert.showAndWait();
         });
     }
 
 
     private void setAuthorized(boolean authorized)
     {
-            this.authorized=authorized;
-            authorizedPanel.setVisible(!authorized);
-            authorizedPanel.setManaged(!authorized);
-            msgPanel.setVisible(authorized);
-            msgPanel.setManaged(authorized);
-            clientViewList.setVisible(authorized);
-            clientViewList.setManaged(authorized);
+        authorizedPanel.setVisible(!authorized);
+        authorizedPanel.setManaged(!authorized);
+        regCheck.setSelected(authorized);
+
+        exitButton.setVisible(authorized);
+        field.setVisible(authorized);
+        clientFileViewList.setManaged(authorized);
+        serverFileViewList.setManaged(authorized);
     }
 
-    public void clientsListClicked(MouseEvent mouseEvent)
+    public void clientFileListClicked(MouseEvent mouseEvent)
     {
-        if ((mouseEvent.getClickCount() == 2)&&(!clientViewList.getSelectionModel().getSelectedItem().equals(myNick)))
+        if ((mouseEvent.getClickCount() == 2))
         {
-            textField.setText("Лично " + clientViewList.getSelectionModel().getSelectedItem() + " ");
-            textField.requestFocus();
-            textField.selectEnd();
+            sendMessage("/file " + clientFileViewList.getSelectionModel().getSelectedItem() + " ");
         }
     }
 
-    private void stopConnection()
+    public void serverFileListClicked(MouseEvent mouseEvent)
+    {
+        if ((mouseEvent.getClickCount() == 2))
+        {
+            loadFile(serverFileViewList.getSelectionModel().getSelectedItem());
+            //sendMessage("/file " + serverFileViewList.getSelectionModel().getSelectedItem() + " ");
+        }
+    }
+
+    private void loadFile(String selectedItem) {
+        sendMessage("/loadFile "+selectedItem);
+    }
+
+    public void exit()
+    {
+        sendMessage("/end");
+    }
+
+    public void stopConnection()
     {
         setAuthorized(false);
+        client = null;
+        onLine = false;
+        loginField.clear();
+        passField.clear();
+
         try
         {
-            textField.clear();
-            loginField.clear();
-            passField.clear();
             in.close();
             out.close();
             socket.close();

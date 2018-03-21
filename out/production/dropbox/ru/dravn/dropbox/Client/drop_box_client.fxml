@@ -4,7 +4,6 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -13,21 +12,18 @@
 
 
     <HBox fx:id="authorizedPanel">
-        <TextField fx:id="loginField" onAction="#sendAuthMsg" promptText="Логин" HBox.hgrow="ALWAYS" />
-        <PasswordField fx:id="passField" onAction="#sendAuthMsg" promptText="Пароль" />
-        <CheckBox fx:id="reg" text="Зарегистрироваться" />
-        <Button onAction="#sendAuthMsg" text="Авторизоваться" />
 
+        <TextField fx:id="loginField" onAction="#authorizationAndRegistration" promptText="Логин" HBox.hgrow="ALWAYS" />
+        <PasswordField fx:id="passField" onAction="#authorizationAndRegistration" promptText="Пароль" />
+        <CheckBox fx:id="regCheck" alignment="CENTER" text="Зарегистрироваться" />
+        <Button onAction="#authorizationAndRegistration" text="Авторизоваться" />
     </HBox>
 
-    <HBox fx:id="field" VBox.vgrow="ALWAYS">
-    <ListView fx:id="clientViewList" managed="false" onMouseClicked="#clientsListClicked" visible="false" HBox.hgrow="ALWAYS" />
-    <!--<TextArea fx:id="textArea" editable="false" HBox.hgrow="ALWAYS" />-->
-    </HBox>
+    <Button fx:id="exitButton" onAction="#exit"  text="Выйти" visible="false"/>
 
-    <HBox fx:id="msgPanel">
-        <TextField fx:id="textField" onAction="#SendMessage" HBox.hgrow="ALWAYS" />
-        <Button onAction="#SendMessage" text="Отправить сообщение" />
+    <HBox fx:id="field" VBox.vgrow="ALWAYS" visible="false">
+    <ListView fx:id="serverFileViewList" managed="false" onMouseClicked="#serverFileListClicked"  HBox.hgrow="ALWAYS" />
+    <ListView fx:id="clientFileViewList" managed="false" onMouseClicked="#clientFileListClicked"  HBox.hgrow="ALWAYS" />
     </HBox>
 
 </VBox>
