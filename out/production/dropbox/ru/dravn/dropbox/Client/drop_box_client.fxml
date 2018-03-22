@@ -12,18 +12,22 @@
 
 
     <HBox fx:id="authorizedPanel">
-
         <TextField fx:id="loginField" onAction="#authorizationAndRegistration" promptText="Логин" HBox.hgrow="ALWAYS" />
         <PasswordField fx:id="passField" onAction="#authorizationAndRegistration" promptText="Пароль" />
         <CheckBox fx:id="regCheck" alignment="CENTER" text="Зарегистрироваться" />
         <Button onAction="#authorizationAndRegistration" text="Авторизоваться" />
     </HBox>
 
-    <Button fx:id="exitButton" onAction="#exit"  text="Выйти" visible="false"/>
+    <Button fx:id="exitButton" onAction="#exit" text="Выйти" visible="false" />
 
-    <HBox fx:id="field" VBox.vgrow="ALWAYS" visible="false">
-    <ListView fx:id="serverFileViewList" managed="false" onMouseClicked="#serverFileListClicked"  HBox.hgrow="ALWAYS" />
-    <ListView fx:id="clientFileViewList" managed="false" onMouseClicked="#clientFileListClicked"  HBox.hgrow="ALWAYS" />
+    <HBox fx:id="title" visible="false">
+        <TextField text="Сервер" HBox.hgrow="ALWAYS"/>
+        <TextField text="Клиент" HBox.hgrow="ALWAYS" />
+    </HBox>
+
+    <HBox fx:id="field" visible="true" VBox.vgrow="ALWAYS">
+    <ListView fx:id="serverFileViewList" managed="false" onMouseClicked="#serverFileListClicked" HBox.hgrow="ALWAYS" />
+    <ListView fx:id="clientFileViewList" managed="false" onMouseClicked="#clientFileListClicked" HBox.hgrow="ALWAYS" />
     </HBox>
 
 </VBox>

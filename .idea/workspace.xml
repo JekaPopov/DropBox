@@ -20,15 +20,14 @@
       <file leaf-file-name="ClientHandler.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Server/ClientHandler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="294">
-              <caret line="46" column="88" lean-forward="false" selection-start-line="46" selection-start-column="88" selection-end-line="46" selection-end-column="88" />
+            <state relative-caret-position="326">
+              <caret line="118" column="9" lean-forward="true" selection-start-line="118" selection-start-column="9" selection-end-line="118" selection-end-column="9" />
               <folding>
-                <element signature="e#2035#2036#0" expanded="true" />
-                <element signature="e#2064#2065#0" expanded="true" />
-                <element signature="e#2099#2100#0" expanded="true" />
-                <element signature="e#2126#2127#0" expanded="true" />
-                <element signature="e#2166#2167#0" expanded="true" />
-                <element signature="e#2198#2199#0" expanded="true" />
+                <element signature="method#stopConnection#0;class#ClientHandler#0" expanded="false" />
+                <element signature="e#5109#5110#0" expanded="true" />
+                <element signature="e#5141#5142#0" expanded="true" />
+                <marker date="1521714515662" expanded="false" signature="4003:4221" ph="{...}" />
+                <marker date="1521714515662" expanded="false" signature="4263:4536" ph="{...}" />
               </folding>
             </state>
           </provider>
@@ -37,20 +36,36 @@
       <file leaf-file-name="ClientController.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/ClientController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="267">
-              <caret line="171" column="0" lean-forward="true" selection-start-line="171" selection-start-column="0" selection-end-line="171" selection-end-column="0" />
+            <state relative-caret-position="375">
+              <caret line="240" column="5" lean-forward="true" selection-start-line="240" selection-start-column="5" selection-end-line="240" selection-end-column="5" />
               <folding>
-                <element signature="class#1957:2817" expanded="false" />
-                <element signature="e#2158#2784#0" expanded="true" />
-                <element signature="e#2783#2784#0" expanded="true" />
-                <element signature="method#call#0;class#2994:3842" expanded="false" />
-                <element signature="e#3183#3809#0" expanded="true" />
-                <element signature="e#3808#3809#0" expanded="true" />
-                <element signature="e#9357#9358#0" expanded="true" />
-                <element signature="e#9411#9412#0" expanded="true" />
-                <element signature="e#9441#9442#0" expanded="true" />
-                <element signature="e#9476#9477#0" expanded="true" />
+                <element signature="class#1837:2697" expanded="false" />
+                <element signature="e#2038#2664#0" expanded="true" />
+                <element signature="e#2663#2664#0" expanded="true" />
+                <element signature="method#call#0;class#2874:3722" expanded="false" />
+                <element signature="e#3063#3689#0" expanded="true" />
+                <element signature="e#3688#3689#0" expanded="true" />
+                <element signature="method#fillServerFileList#0;class#ClientController#0" expanded="false" />
+                <element signature="method#fillClientFileList#0;class#ClientController#0" expanded="false" />
+                <element signature="method#sendMessage#0;class#ClientController#0" expanded="false" />
+                <element signature="method#authorizationAndRegistration#0;class#ClientController#0" expanded="false" />
+                <element signature="method#showAlert#0;class#ClientController#0" expanded="false" />
+                <element signature="method#stopConnection#0;class#ClientController#0" expanded="false" />
+                <marker date="1521718571197" expanded="false" signature="9930:10167" ph="{...}" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="drop_box_client.fxml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/drop_box_client.fxml">
+          <provider editor-type-id="JavaFX-Scene-Builder">
+            <state />
+          </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="300">
+              <caret line="28" column="97" lean-forward="false" selection-start-line="28" selection-start-column="97" selection-end-line="28" selection-end-column="97" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -75,6 +90,8 @@
       <find>clientL</find>
       <find>nick</find>
       <find>aler</find>
+      <find>load</find>
+      <find>Fileha</find>
     </findStrings>
   </component>
   <component name="GradleLocalSettings">
@@ -109,12 +126,14 @@
         <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Client/WorkWithFiles.java" />
         <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Main.java" />
         <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Server/Server.java" />
-        <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Client/Client.java" />
         <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Client/FileHandler.java" />
+        <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Server/Query.java" />
         <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Server/Authorization.java" />
         <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Server/AuthService.java" />
-        <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Client/drop_box_client.fxml" />
+        <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Client/Client.java" />
+        <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Server/ServerClient.java" />
         <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Server/ClientHandler.java" />
+        <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Client/drop_box_client.fxml" />
         <option value="$PROJECT_DIR$/src/ru/dravn/dropbox/Client/ClientController.java" />
       </list>
     </option>
@@ -483,6 +502,7 @@
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1985294" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3292978" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -495,7 +515,6 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32928804" sideWeight="0.5" order="4" side_tool="true" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32947975" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
@@ -511,13 +530,11 @@
           <option name="timeStamp" value="39" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="126" />
+      <option name="time" value="135" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/drop_box_client.fxml" />
-    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/ClientStart.java" />
     <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Server/Server.java" />
     <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Server/AuthService.java" />
     <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Main.java" />
@@ -581,12 +598,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="351">
           <caret line="13" column="39" lean-forward="false" selection-start-line="13" selection-start-column="8" selection-end-line="13" selection-end-column="39" />
-          <folding>
-            <element signature="e#135#136#0" expanded="false" />
-            <element signature="e#180#181#0" expanded="false" />
-            <element signature="e#230#231#0" expanded="false" />
-            <element signature="e#276#277#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -616,85 +628,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/drop_box_client.fxml">
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="354">
-          <caret line="29" column="0" lean-forward="true" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/Client.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="243">
-          <caret line="9" column="27" lean-forward="true" selection-start-line="9" selection-start-column="27" selection-end-line="9" selection-end-column="27" />
-          <folding>
-            <element signature="e#353#354#0" expanded="true" />
-            <element signature="e#382#383#0" expanded="true" />
-            <element signature="e#415#416#0" expanded="true" />
-            <element signature="e#445#446#0" expanded="true" />
-            <element signature="e#490#491#0" expanded="true" />
-            <element signature="e#532#533#0" expanded="true" />
-            <element signature="e#579#580#0" expanded="true" />
-            <element signature="e#626#627#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Server/AuthService.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="343">
-          <caret line="65" column="0" lean-forward="false" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Server/Authorization.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="29" column="0" lean-forward="false" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/ClientStart.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="324">
           <caret line="16" column="5" lean-forward="true" selection-start-line="16" selection-start-column="5" selection-end-line="16" selection-end-column="5" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/FileHandler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="12" column="0" lean-forward="false" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
-          <folding>
-            <element signature="e#149#150#0" expanded="false" />
-            <element signature="e#198#199#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Server/ClientHandler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="294">
-          <caret line="46" column="88" lean-forward="false" selection-start-line="46" selection-start-column="88" selection-end-line="46" selection-end-column="88" />
-          <folding>
-            <element signature="e#2035#2036#0" expanded="true" />
-            <element signature="e#2064#2065#0" expanded="true" />
-            <element signature="e#2099#2100#0" expanded="true" />
-            <element signature="e#2126#2127#0" expanded="true" />
-            <element signature="e#2166#2167#0" expanded="true" />
-            <element signature="e#2198#2199#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -711,27 +649,111 @@
         <state relative-caret-position="-6472">
           <caret line="148" column="13" lean-forward="false" selection-start-line="148" selection-start-column="13" selection-end-line="148" selection-end-column="13" />
           <folding>
-            <element signature="e#8262#8263#0" expanded="true" />
-            <element signature="e#8297#8298#0" expanded="true" />
+            <element signature="e#8262#8263#0" expanded="false" />
+            <element signature="e#8297#8298#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Server/Query.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="9" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Server/AuthService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="621">
+          <caret line="37" column="48" lean-forward="false" selection-start-line="37" selection-start-column="48" selection-end-line="37" selection-end-column="48" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Server/Authorization.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="297">
+          <caret line="60" column="33" lean-forward="false" selection-start-line="60" selection-start-column="21" selection-end-line="60" selection-end-column="33" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/FileHandler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="324">
+          <caret line="12" column="0" lean-forward="false" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/Client.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="523">
+          <caret line="29" column="0" lean-forward="false" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
+          <folding>
+            <element signature="e#422#423#0" expanded="true" />
+            <element signature="e#452#453#0" expanded="true" />
+            <element signature="e#497#498#0" expanded="true" />
+            <element signature="e#529#530#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Server/ServerClient.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="324">
+          <caret line="12" column="8" lean-forward="false" selection-start-line="12" selection-start-column="8" selection-end-line="12" selection-end-column="8" />
+          <folding>
+            <element signature="e#352#353#0" expanded="false" />
+            <element signature="e#382#383#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Server/ClientHandler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="326">
+          <caret line="118" column="9" lean-forward="true" selection-start-line="118" selection-start-column="9" selection-end-line="118" selection-end-column="9" />
+          <folding>
+            <element signature="method#stopConnection#0;class#ClientHandler#0" expanded="false" />
+            <element signature="e#5109#5110#0" expanded="true" />
+            <element signature="e#5141#5142#0" expanded="true" />
+            <marker date="1521714515662" expanded="false" signature="4003:4221" ph="{...}" />
+            <marker date="1521714515662" expanded="false" signature="4263:4536" ph="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/drop_box_client.fxml">
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="28" column="97" lean-forward="false" selection-start-line="28" selection-start-column="97" selection-end-line="28" selection-end-column="97" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/ru/dravn/dropbox/Client/ClientController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="267">
-          <caret line="171" column="0" lean-forward="true" selection-start-line="171" selection-start-column="0" selection-end-line="171" selection-end-column="0" />
+        <state relative-caret-position="375">
+          <caret line="240" column="5" lean-forward="true" selection-start-line="240" selection-start-column="5" selection-end-line="240" selection-end-column="5" />
           <folding>
-            <element signature="class#1957:2817" expanded="false" />
-            <element signature="e#2158#2784#0" expanded="true" />
-            <element signature="e#2783#2784#0" expanded="true" />
-            <element signature="method#call#0;class#2994:3842" expanded="false" />
-            <element signature="e#3183#3809#0" expanded="true" />
-            <element signature="e#3808#3809#0" expanded="true" />
-            <element signature="e#9357#9358#0" expanded="true" />
-            <element signature="e#9411#9412#0" expanded="true" />
-            <element signature="e#9441#9442#0" expanded="true" />
-            <element signature="e#9476#9477#0" expanded="true" />
+            <element signature="class#1837:2697" expanded="false" />
+            <element signature="e#2038#2664#0" expanded="true" />
+            <element signature="e#2663#2664#0" expanded="true" />
+            <element signature="method#call#0;class#2874:3722" expanded="false" />
+            <element signature="e#3063#3689#0" expanded="true" />
+            <element signature="e#3688#3689#0" expanded="true" />
+            <element signature="method#fillServerFileList#0;class#ClientController#0" expanded="false" />
+            <element signature="method#fillClientFileList#0;class#ClientController#0" expanded="false" />
+            <element signature="method#sendMessage#0;class#ClientController#0" expanded="false" />
+            <element signature="method#authorizationAndRegistration#0;class#ClientController#0" expanded="false" />
+            <element signature="method#showAlert#0;class#ClientController#0" expanded="false" />
+            <element signature="method#stopConnection#0;class#ClientController#0" expanded="false" />
+            <marker date="1521718571197" expanded="false" signature="9930:10167" ph="{...}" />
           </folding>
         </state>
       </provider>

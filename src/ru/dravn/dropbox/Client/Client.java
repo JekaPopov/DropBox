@@ -4,14 +4,14 @@ import java.io.File;
 
 public class Client {
 
-    private final String FOLDERPATH = "C:\\_client\\";
+    protected String FOLDERPATH = "C:\\_client\\";
 
     private String mLogin;
-    private String mFolder;
+    private File mFolder;
 
     public Client(String login) {
         mLogin = login;
-        mFolder = FOLDERPATH + login;
+        mFolder = new File(FOLDERPATH + login+"\\");
         createClientFolder();
     }
 
@@ -19,17 +19,13 @@ public class Client {
         return mLogin;
     }
 
-    public String getFolder() {
+    public File getFolder() {
         return mFolder;
     }
 
     private void createClientFolder()
     {
-        new File(mFolder).mkdirs();
+        mFolder.mkdirs();
     }
 
-    public String[] getFolderFileList()
-    {
-        return new File(mFolder).list();
-    }
 }

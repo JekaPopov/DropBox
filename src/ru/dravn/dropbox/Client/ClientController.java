@@ -7,26 +7,21 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Text;
 import javafx.util.Callback;
 
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 
 public class ClientController implements Initializable {
 
+    @FXML
+    HBox title;
     @FXML
     Button exitButton;
     @FXML
@@ -47,8 +42,11 @@ public class ClientController implements Initializable {
     private Socket socket;
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    private Client client;
+    private Client mClient;
     private boolean onLine;
+    private String mFile;
+    private String mQuery;
+    private File mFileList;
 
     private ObservableList<String> serverFileList;
     private ObservableList<String> clientFileList;
@@ -135,7 +133,7 @@ public class ClientController implements Initializable {
 
                     while(onLine)
                     {
-                        Object request = receiveMsg();
+                        Object request = receiveMessage();
                         if(request instanceof String)
                         {
                             String[] data =((String) request).split("\\s");
@@ -144,19 +142,23 @@ public class ClientController implements Initializable {
                                 case("/authok"):
                                 {
                                     setAuthorized(true);
-                                    client = new Client(data[1]);
-
+                                    mClient = new Client(data[1]);
                                     fillClientFileList();
                                     break;
                                 }
                                 case ("/fileList"):
                                 {
-                                    fillServerFileList(data);
+                                    mQuery = "/fileList";
                                     break;
                                 }
                                 case ("/alert"):
                                 {
                                     showAlert(data);
+                                    break;
+                                }
+                                case ("/sendFile"):
+                                {
+                                    mFile = data[1];
                                     break;
                                 }
                                 case("/end"):
@@ -168,8 +170,21 @@ public class ClientController implements Initializable {
                         }
                         else if(request instanceof File)
                         {
-                            System.out.println(((File) request).getName() + " " + ((File) request).getAbsolutePath());
+                            switch(mQuery)
+                            {
+                                case("/fileList"):
+                                {
+                                    mFileList = (File)request;
+                                    fillServerFileList();
+                                    mQuery = null;
+                                    break;
+                                }
 
+                            }
+                        }
+                        else if(request instanceof  byte[])
+                        {
+                            receiveFile((byte[]) request);
                         }
                     }
                 }
@@ -191,27 +206,114 @@ public class ClientController implements Initializable {
         }
     }
 
-    private void fillServerFileList(String[] data) {
+
+    public void clientFileListClicked(MouseEvent mouseEvent)
+    {
+
+        if(mouseEvent.isSecondaryButtonDown())
+        {
+            System.out.println("вторая");
+        }
+        else if ((mouseEvent.getClickCount() == 2))
+        {
+            try
+            {
+                sendFile(clientFileViewList.getSelectionModel().getSelectedItem());
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void serverFileListClicked(MouseEvent mouseEvent)
+    {
+        if ((mouseEvent.getClickCount() == 2))
+        {
+
+            loadFile(serverFileViewList.getSelectionModel().getSelectedItem());
+        }
+        else if(mouseEvent.getButton().name().equals("SECONDARY"))
+        {
+            System.out.println("вторая");
+        }
+    }
+
+    private void receiveFile(byte[] request) throws IOException
+    {
+        System.out.println("receive: "+mFile+" "+request.length);
+
+        File file = new File(mClient.getFolder()+"\\"+mFile);
+        file.createNewFile();
+        FileOutputStream fos=new FileOutputStream(file.getPath());
+        try
+        {
+            fos.write(request, 0, request.length);
+        }
+        catch(IOException ex){
+            file.delete();
+            System.out.println(ex.getMessage());
+        }
+
+        fos.close();
+        mFile = null;
+        fillClientFileList();
+        fillServerFileList();
+    }
+
+    private void sendFile(String fileName) throws IOException {
+        sendMessage("/receiveFile " + fileName);
+
+        FileInputStream fin = new FileInputStream(mClient.getFolder()+"\\"+fileName);
+
+        byte[] buffer = new byte[fin.available()];
+
+        System.out.println("send: "+ fileName +" "+ buffer.length);
+
+        fin.read(buffer, 0, fin.available());
+        out.writeObject(buffer);
+        out.flush();
+
+        fin.close();
+        deleteFile(fileName);
+        fillClientFileList();
+        fillServerFileList();
+        mQuery = null;
+    }
+
+    private void deleteFile(String fileName)
+    {
+        if(new File(mClient.getFolder() + "\\"+fileName).delete())
+            System.out.println("удален");
+        else
+            System.out.println("не удален");
+    }
+
+    private void fillServerFileList() {
         Platform.runLater(() -> {
             serverFileList.clear();
-            for (int i = 1; i < data.length; i++) {
-                serverFileList.addAll(data[i]);
+
+            if(mFileList.list()!=null)
+            {
+                serverFileList.addAll(mFileList.list());
+            }
+            });
+    }
+
+    private void fillClientFileList() {
+        Platform.runLater(() -> {
+            clientFileList.clear();
+
+            if (mClient.getFolder().list() != null)
+            {
+                clientFileList.addAll(mClient.getFolder().list());
             }
         });
     }
 
-    private void fillClientFileList() {
-        if(FileHandler.getFolderList(client.getFolder())!=null)
-        {
-            Platform.runLater(() -> {
-                clientFileList.clear();
-                clientFileList.addAll(FileHandler.getFolderList(client.getFolder()));
-            });
-        }
-    }
 
-
-    private void sendMessage(String msg)
+    private void sendMessage(Object msg)
     {
         try
         {
@@ -231,7 +333,7 @@ public class ClientController implements Initializable {
         }
     }
 
-    public Object receiveMsg()
+    public Object receiveMessage()
     {
         if(socket.isClosed()||socket==null)return null;
 
@@ -264,8 +366,6 @@ public class ClientController implements Initializable {
         passField.clear();
     }
 
-
-
     private void showAlert(String ... msg)
     {
         for (int i = 2; i <msg.length ; i++) {
@@ -280,7 +380,6 @@ public class ClientController implements Initializable {
         });
     }
 
-
     private void setAuthorized(boolean authorized)
     {
         authorizedPanel.setVisible(!authorized);
@@ -289,29 +388,17 @@ public class ClientController implements Initializable {
 
         exitButton.setVisible(authorized);
         field.setVisible(authorized);
+        title.setVisible(authorized);
         clientFileViewList.setManaged(authorized);
         serverFileViewList.setManaged(authorized);
     }
 
-    public void clientFileListClicked(MouseEvent mouseEvent)
-    {
-        if ((mouseEvent.getClickCount() == 2))
-        {
-            sendMessage("/file " + clientFileViewList.getSelectionModel().getSelectedItem() + " ");
-        }
-    }
 
-    public void serverFileListClicked(MouseEvent mouseEvent)
-    {
-        if ((mouseEvent.getClickCount() == 2))
-        {
-            loadFile(serverFileViewList.getSelectionModel().getSelectedItem());
-            //sendMessage("/file " + serverFileViewList.getSelectionModel().getSelectedItem() + " ");
-        }
-    }
 
     private void loadFile(String selectedItem) {
-        sendMessage("/loadFile "+selectedItem);
+        System.out.println(mFileList +"\\"+ selectedItem);
+        sendMessage("/getFile "+selectedItem);
+        //sendMessage(new File(mFileList +"\\"+ selectedItem) );
     }
 
     public void exit()
@@ -322,7 +409,7 @@ public class ClientController implements Initializable {
     public void stopConnection()
     {
         setAuthorized(false);
-        client = null;
+        mClient = null;
         onLine = false;
         loginField.clear();
         passField.clear();
