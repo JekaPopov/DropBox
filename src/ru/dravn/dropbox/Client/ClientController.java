@@ -7,57 +7,53 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Text;
 import javafx.util.Callback;
 
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 
 public class ClientController implements Initializable {
 
-
+    @FXML
+    HBox title;
+    @FXML
+    Button exitButton;
     @FXML
     HBox field;
     @FXML
-    HBox msgPanel;
-    @FXML
     HBox authorizedPanel;
-    @FXML
-    TextArea textArea;
-    @FXML
-    TextField textField;
     @FXML
     TextField loginField;
     @FXML
     PasswordField passField;
     @FXML
-    ListView<String> clientViewList;
+    ListView<String> serverFileViewList;
     @FXML
-    CheckBox reg;
+    ListView<String> clientFileViewList;
+    @FXML
+    CheckBox regCheck;
 
-    public boolean authorized;
     private Socket socket;
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    private String myNick;
+    private Client mClient;
     private boolean onLine;
+    private String mFile;
+    private String mQuery;
+    private File mFileList;
 
-    private ObservableList<String> clientList;
+    private ObservableList<String> serverFileList;
+    private ObservableList<String> clientFileList;
 
-    final String SERVER_IP = "localhost";
-    final int SERVER_PORT = 8189;
+    private final String SERVER_IP = "localhost";
+    private final int SERVER_PORT = 8189;
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -75,10 +71,9 @@ public class ClientController implements Initializable {
 
             out = new ObjectOutputStream(socket.getOutputStream());
 
-            clientList= FXCollections.observableArrayList();
-            clientViewList.setItems(clientList);
-
-            clientViewList.setCellFactory(new Callback<ListView<String>, ListCell<String>>()
+            serverFileList = FXCollections.observableArrayList();
+            serverFileViewList.setItems(serverFileList);
+            serverFileViewList.setCellFactory(new Callback<ListView<String>, ListCell<String>>()
             {
                 @Override
                 public ListCell<String> call(ListView<String> param)
@@ -92,10 +87,32 @@ public class ClientController implements Initializable {
                             if (!empty)
                             {
                                 setText(item);
-                                if (item.equals(myNick))
-                                {
-                                    setStyle("-fx-font-weight: bold");
-                                }
+                            }
+                            else
+                            {
+                                setGraphic(null);
+                                setText(null);
+                            }
+                        }
+                    };
+                }
+            });
+
+            clientFileList = FXCollections.observableArrayList();
+            clientFileViewList.setItems(clientFileList);
+            clientFileViewList.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+                @Override
+                public ListCell<String> call(ListView<String> param)
+                {
+                    return new ListCell<String>()
+                    {
+                        @Override
+                        protected void updateItem(String item, boolean empty)
+                        {
+                            super.updateItem(item, empty);
+                            if (!empty)
+                            {
+                                setText(item);
                             }
                             else
                             {
@@ -113,62 +130,75 @@ public class ClientController implements Initializable {
                 try
                 {
                     in = new ObjectInputStream(socket.getInputStream());
+
                     while(onLine)
                     {
-                        Object o = in.readObject();
-                        String s = o.toString();
-
-                        System.out.println(s);
-                        if(s.startsWith("/"))
+                        Object request = receiveMessage();
+                        if(request instanceof String)
                         {
-                            if (s.startsWith("/authok "))
+                            String[] data =((String) request).split("\\s");
+                            switch (data[0])
                             {
-                            setAuthorized(true);
-                            myNick = s.split("\\s")[1];
-                            }
-                            else if (s.startsWith("/fileList "))
-                            {
-                                String[] data = s.split("\\s");
-                                Platform.runLater(() ->
+                                case("/authok"):
                                 {
-                                    clientList.clear();
-
-                                    for (int i = 1; i < data.length; i++)
-                                    {
-                                        clientList.addAll(data[i]);
-                                    }
-                                });
-                            }
-                            else if(s.startsWith("/alert "))
-                            {
-                                String data[]=s.split("\\s",2);
-                                showAlert(data[1]);
-                            }
-                            else if(s.startsWith("/end"))
-                            {
-                                onLine = false;
+                                    setAuthorized(true);
+                                    mClient = new Client(data[1]);
+                                    fillClientFileList();
+                                    break;
+                                }
+                                case ("/fileList"):
+                                {
+                                    mQuery = "/fileList";
+                                    break;
+                                }
+                                case ("/alert"):
+                                {
+                                    showAlert(data);
+                                    break;
+                                }
+                                case ("/sendFile"):
+                                {
+                                    mFile = data[1];
+                                    break;
+                                }
+                                case("/end"):
+                                {
+                                    stopConnection();
+                                    break;
+                                }
                             }
                         }
-                        else
+                        else if(request instanceof File)
                         {
-                        textArea.appendText(s + "\n");
+                            switch(mQuery)
+                            {
+                                case("/fileList"):
+                                {
+                                    mFileList = (File)request;
+                                    fillServerFileList();
+                                    mQuery = null;
+                                    break;
+                                }
+
+                            }
+                        }
+                        else if(request instanceof  byte[])
+                        {
+                            receiveFile((byte[]) request);
                         }
                     }
-
                 }
                 catch (IOException e)
                 {
                     showAlert("Сервер перестал отвечать");
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                } finally
+                }
+                finally
                 {
                     stopConnection();
                 }
             });
             t.setDaemon(true);
             t.start();
-
         }
         catch (IOException e)
         {
@@ -177,113 +207,215 @@ public class ClientController implements Initializable {
     }
 
 
-    public void SendMessage()
+    public void clientFileListClicked(MouseEvent mouseEvent)
+    {
+
+        if(mouseEvent.isSecondaryButtonDown())
+        {
+            System.out.println("вторая");
+        }
+        else if ((mouseEvent.getClickCount() == 2))
+        {
+            try
+            {
+                sendFile(clientFileViewList.getSelectionModel().getSelectedItem());
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void serverFileListClicked(MouseEvent mouseEvent)
+    {
+        if ((mouseEvent.getClickCount() == 2))
+        {
+
+            loadFile(serverFileViewList.getSelectionModel().getSelectedItem());
+        }
+        else if(mouseEvent.getButton().name().equals("SECONDARY"))
+        {
+            System.out.println("вторая");
+        }
+    }
+
+    private void receiveFile(byte[] request) throws IOException
+    {
+        System.out.println("receive: "+mFile+" "+request.length);
+
+        File file = new File(mClient.getFolder()+"\\"+mFile);
+        file.createNewFile();
+        FileOutputStream fos=new FileOutputStream(file.getPath());
+        try
+        {
+            fos.write(request, 0, request.length);
+        }
+        catch(IOException ex){
+            file.delete();
+            System.out.println(ex.getMessage());
+        }
+
+        fos.close();
+        mFile = null;
+        fillClientFileList();
+        fillServerFileList();
+    }
+
+    private void sendFile(String fileName) throws IOException {
+        sendMessage("/receiveFile " + fileName);
+
+        FileInputStream fin = new FileInputStream(mClient.getFolder()+"\\"+fileName);
+
+        byte[] buffer = new byte[fin.available()];
+
+        System.out.println("send: "+ fileName +" "+ buffer.length);
+
+        fin.read(buffer, 0, fin.available());
+        out.writeObject(buffer);
+        out.flush();
+
+        fin.close();
+        deleteFile(fileName);
+        fillClientFileList();
+        fillServerFileList();
+        mQuery = null;
+    }
+
+    private void deleteFile(String fileName)
+    {
+        if(new File(mClient.getFolder() + "\\"+fileName).delete())
+            System.out.println("удален");
+        else
+            System.out.println("не удален");
+    }
+
+    private void fillServerFileList() {
+        Platform.runLater(() -> {
+            serverFileList.clear();
+
+            if(mFileList.list()!=null)
+            {
+                serverFileList.addAll(mFileList.list());
+            }
+            });
+    }
+
+    private void fillClientFileList() {
+        Platform.runLater(() -> {
+            clientFileList.clear();
+
+            if (mClient.getFolder().list() != null)
+            {
+                clientFileList.addAll(mClient.getFolder().list());
+            }
+        });
+    }
+
+
+    private void sendMessage(Object msg)
     {
         try
         {
-            if(textField.getText().startsWith("Лично "))
+            if (socket == null
+                    || socket.isClosed())
             {
-                String[] data = textField.getText().split("\\s", 4);
-                out.writeObject("/w "+data[1]+" "+data[2]);
-                out.flush();
+                connect();
             }
-            else
-            {
-                out.writeObject(textField.getText());
-                out.flush();
-            }
+
+            out.writeObject(msg);
+            out.flush();
         }
         catch (IOException e)
         {
             e.printStackTrace();
             showAlert("Ошибка отправки сообщения");
         }
-        /*if(onLine)
-        {
-            textArea.setWrapText(true);
-            textField.clear();
-            textField.requestFocus();
-        }*/
     }
 
-    public void sendAuthMsg()
+    public Object receiveMessage()
     {
+        if(socket.isClosed()||socket==null)return null;
 
-        if(passField.getText().isEmpty()||loginField.getText().isEmpty())
+        try {
+            return in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void authorizationAndRegistration()
+    {
+        if(passField.getText().isEmpty()
+                ||loginField.getText().isEmpty())
         {
             showAlert("Введены неверные данные");
             return;
         }
 
-        if (socket == null || socket.isClosed()){
-            connect();
+        if(regCheck.isSelected())
+        {
+            sendMessage("/reg " + loginField.getText() + " " + passField.getText());
         }
-        try {// /auth login pass
-            if(reg.isSelected())
-            {
-                out.writeObject("/reg " + loginField.getText() + " " + passField.getText());
-            }
-            else
-            {
-                System.out.println("/auth " + loginField.getText() + " " + passField.getText());
-                out.writeObject("/auth " + loginField.getText() + " " + passField.getText());
-            }
-            out.flush();
-            loginField.clear();
-            passField.clear();
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Ошибка авторизации");
+        else
+        {
+            sendMessage("/auth " + loginField.getText() + " " + passField.getText());
         }
+        loginField.clear();
+        passField.clear();
     }
 
-
-
-    private void showAlert(String msg)
+    private void showAlert(String ... msg)
     {
-        Platform.runLater(new Runnable(){
-
-            @Override
-            public void run() {
-                Alert alert =new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Возникли проблемы");
-                alert.setHeaderText(null);
-                alert.setContentText(msg);
-                alert.showAndWait();
-            }
+        for (int i = 2; i <msg.length ; i++) {
+            msg[1]+=msg[i]+" ";
+        }
+        Platform.runLater(() -> {
+            Alert alert =new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Возникли проблемы");
+            alert.setHeaderText(null);
+            alert.setContentText(msg[1]);
+            alert.showAndWait();
         });
     }
 
-
     private void setAuthorized(boolean authorized)
     {
-            this.authorized=authorized;
-            authorizedPanel.setVisible(!authorized);
-            authorizedPanel.setManaged(!authorized);
-            msgPanel.setVisible(authorized);
-            msgPanel.setManaged(authorized);
-            clientViewList.setVisible(authorized);
-            clientViewList.setManaged(authorized);
+        authorizedPanel.setVisible(!authorized);
+        authorizedPanel.setManaged(!authorized);
+        regCheck.setSelected(authorized);
+
+        exitButton.setVisible(authorized);
+        field.setVisible(authorized);
+        title.setVisible(authorized);
+        clientFileViewList.setManaged(authorized);
+        serverFileViewList.setManaged(authorized);
     }
 
-    public void clientsListClicked(MouseEvent mouseEvent)
+
+
+    private void loadFile(String selectedItem) {
+        System.out.println(mFileList +"\\"+ selectedItem);
+        sendMessage("/getFile "+selectedItem);
+        //sendMessage(new File(mFileList +"\\"+ selectedItem) );
+    }
+
+    public void exit()
     {
-        if ((mouseEvent.getClickCount() == 2)&&(!clientViewList.getSelectionModel().getSelectedItem().equals(myNick)))
-        {
-            textField.setText("Лично " + clientViewList.getSelectionModel().getSelectedItem() + " ");
-            textField.requestFocus();
-            textField.selectEnd();
-        }
+        sendMessage("/end");
     }
 
-    private void stopConnection()
+    public void stopConnection()
     {
         setAuthorized(false);
+        mClient = null;
+        onLine = false;
+        loginField.clear();
+        passField.clear();
+
         try
         {
-            textField.clear();
-            loginField.clear();
-            passField.clear();
             in.close();
             out.close();
             socket.close();

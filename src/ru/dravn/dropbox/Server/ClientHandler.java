@@ -1,7 +1,6 @@
 package ru.dravn.dropbox.Server;
 
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ClientHandler {
@@ -11,8 +10,10 @@ public class ClientHandler {
     protected Socket socket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
-    private String nick;
     private boolean onLine;
+    private String mQuery;
+    private String mFile;
+    private ServerClient mClient;
 
     ClientHandler(Server server, Socket socket)
     {
@@ -28,25 +29,47 @@ public class ClientHandler {
                 out = new ObjectOutputStream(socket.getOutputStream());
 
                 while (onLine) {
-                    if(authorization.runAuth(receiveMsg()))break;
+                    if(authorization.runAuth(receiveMessage()))break;
                 }
 
                 while (onLine) {
                     Object request = in.readObject();
+
                     if (request instanceof String) {
-                        String msg = request.toString();
-                        System.out.println(nick + ": " + msg);
+                        String[] data = ((String) request).split("\\s");
 
-                        if (msg.startsWith("/File ")) {
-                            String[] data = msg.split("\\s");
-                            File file = new File("C:\\serv\\"+nick+"\\"+data[1]);
-                            out.writeObject(file);
-
-                        } else if (msg.equals("/end"))
+                        switch (data[0])
                         {
-
-                            stopConnection();
+                            case ("/getFile"):
+                            {
+                                sendFile(data[1]);
+                                break;
+                            }
+                            case ("/receiveFile"):
+                            {
+                                mFile = data[1];
+                                break;
+                            }
+                            case ("/end"):
+                            {
+                                stopConnection();
+                                break;
+                            }
                         }
+                    }
+                    else if(request instanceof File)
+                    {
+                        switch (mQuery)
+                        {
+                            case ("/deleteFile"):
+                            {
+                             break;
+                            }
+                        }
+                    }
+                    else if(request instanceof  byte[])
+                    {
+                        receiveFile((byte[]) request);
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
@@ -57,27 +80,72 @@ public class ClientHandler {
         }).start();
     }
 
-    public Server getServer() {
-        return server;
+
+
+    private void sendFile(String fileName) throws IOException {
+
+        System.out.println("send: "+ fileName);
+
+        sendMessage("/sendFile " + fileName);
+
+        FileInputStream fin = new FileInputStream(mClient.getFolder()+"\\"+fileName);
+
+        byte[] buffer = new byte[fin.available()];
+
+        System.out.println(buffer.length);
+
+        fin.read(buffer, 0, fin.available());
+        fin.close();
+        out.writeObject(buffer);
+        out.flush();
+
+        deleteFile(fileName);
+
+        sendFileList();
     }
 
-    public String getNick()
+    private void receiveFile(byte[] request) throws IOException
     {
-        return nick;
+        System.out.println("receive: " + mFile + " " + request.length);
+
+        File file = new File(mClient.getFolder() + "\\" + mFile);
+        file.createNewFile();
+        FileOutputStream fos = new FileOutputStream(file.getPath());
+        try
+        {
+            fos.write(request, 0, request.length);
+        }
+        catch (IOException ex)
+        {
+            file.delete();
+            System.out.println(ex.getMessage());
+        }
+        fos.close();
+        mFile = null;
+        sendFileList();
     }
 
-    public void setNick(String nick) {
-        this.nick = nick;
+    private void deleteFile(String fileName)
+    {
+
+        if(new File(mClient.getFolder() + "\\"+fileName).delete())
+            System.out.println("удален");
+        else
+            System.out.println("не удален");
+
+    }
+    public void sendFileList()
+    {
+        sendMessage("/fileList");
+        sendMessage(mClient.getFolder());
     }
 
-
-    public void sendMsg(String msg)
+    public void sendMessage(Object msg)
     {
         if(socket.isClosed())return;
         try
         {
             out.writeObject(msg);
-            System.out.println("out"+msg);
             out.flush();
         }
         catch (IOException e)
@@ -86,9 +154,11 @@ public class ClientHandler {
         }
     }
 
-    public Object receiveMsg()
+
+    public Object receiveMessage()
     {
-        if(socket.isClosed())return null;
+        if(socket.isClosed()
+                ||socket==null)return null;
             try {
                 return in.readObject();
             } catch (IOException | ClassNotFoundException e) {
@@ -100,12 +170,13 @@ public class ClientHandler {
 
     public void stopConnection()
     {
-        nick = null;
+        mClient = null;
+        mQuery = null;
         server.unSubscribe(ClientHandler.this);
         try {
             onLine = false;
             System.out.println("ClientHandler.stopConnection");
-            sendMsg("/end");
+            sendMessage("/end");
             in.close();
             out.close();
             socket.close();
@@ -113,5 +184,13 @@ public class ClientHandler {
         } catch (Throwable e) {
             e.printStackTrace();
         }
+    }
+
+    public Server getServer() {
+        return server;
+    }
+
+    public void setClient(ServerClient client) {
+        mClient = client;
     }
 }

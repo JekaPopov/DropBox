@@ -6,6 +6,7 @@ import java.sql.*;
 public class AuthService {
     private static Connection connect;
     private static Statement stmt;
+    private static String folder =  "C:\\_serv\\";
 
     public static void connect() throws ClassNotFoundException, SQLException
     {
@@ -34,11 +35,11 @@ public class AuthService {
     public static void WriteDB() throws SQLException
     {
         stmt.execute("INSERT INTO USERS (LOGIN, PASS, FOLDER) " +
-                "VALUES ('log1', 'pass1', 'C:\\serv\\log1'); ");
+                "VALUES ('log1', 'pass1', 'C:\\_serv\\log1'); ");
         stmt.execute("INSERT INTO USERS (LOGIN, PASS, FOLDER) " +
-                " VALUES ('log2', 'pass2','C:\\serv\\log2'); ");
+                " VALUES ('log2', 'pass2','C:\\_serv\\log2'); ");
         stmt.execute("INSERT INTO USERS (LOGIN, PASS, FOLDER) " +
-                " VALUES ('log3', 'pass3','C:\\serv\\log3'); ");
+                " VALUES ('log3', 'pass3','C:\\_serv\\log3'); ");
 
         //System.out.println("Таблица заполнена");
     }
@@ -48,7 +49,6 @@ public class AuthService {
         try {
             ResultSet rs = stmt.executeQuery("SELECT PASS FROM USERS WHERE LOGIN ='" + login+"'");
             if (rs.next()){
-                System.out.println(rs.getString("PASS"));
                 return rs.getString("PASS").equals(pass);
             }
             else return false;
@@ -63,10 +63,8 @@ public class AuthService {
         {
             if(checkLogin(login))
             {
-                String folder = "C:\\serv\\" + login;
                 stmt.execute("INSERT INTO USERS (LOGIN, PASS, FOLDER) " +
-                        "VALUES ('" + login + "', '" + pass + "','" + folder + "'); ");
-                new File(folder).mkdir();
+                        "VALUES ('" + login + "', '" + pass + "','" + folder + login + "'); ");
                 return true;
             }
         } catch (SQLException e) {
@@ -87,5 +85,19 @@ public class AuthService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getFolder(String login) {
+        try
+        {
+            ResultSet rs = stmt.executeQuery("SELECT FOLDER FROM USERS WHERE LOGIN ='" + login+"'");
+            if (rs.next())
+            {
+                return rs.getString("FOLDER");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

@@ -1,5 +1,6 @@
 package ru.dravn.dropbox.Server;
 
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -19,6 +20,7 @@ public class Server {
             clients = new Vector<>();
             AuthService.connect();
             System.out.println("Server started... Waiting clients...");
+
 
             while(true)
             {
