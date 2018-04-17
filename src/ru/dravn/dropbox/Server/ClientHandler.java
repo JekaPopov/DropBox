@@ -11,11 +11,12 @@ public class ClientHandler implements Command {
     private Server server;
     protected Socket socket;
     private ObjectInputStream in;
-    private ObjectOutputStream out;
+    public ObjectOutputStream out;
     private boolean onLine;
     private String mQuery;
     private String mFile;
     private ServerClient mClient;
+    public FileHandler fh;
 
     ClientHandler(Server server, Socket socket)
     {
@@ -30,48 +31,41 @@ public class ClientHandler implements Command {
                 in = new ObjectInputStream(socket.getInputStream());
                 out = new ObjectOutputStream(socket.getOutputStream());
 
-                while (onLine) {
+                while (onLine)
+                {
                     if(authorization.runAuth(receiveMessage()))break;
                 }
 
-                while (onLine) {
+                while (onLine)
+                {
                     Object request = in.readObject();
 
-                    if (request instanceof String) {
+                    if (request instanceof String)
+                    {
                         String[] data = ((String) request).split("\\s");
 
                         switch (data[0])
                         {
-                            case (GetFile):
+                            case GetFile:
                             {
-                                sendFile(data[1]);
+                                fh.sendFile(data[1]);
                                 break;
                             }
-                            case (ReceiveFile):
+                            case ReceiveFile:
                             {
-                                mFile = data[1];
+                                fh.setReciveFile(data[1]);
                                 break;
                             }
-                            case (Close_Connection):
+                            case Close_Connection:
                             {
                                 stopConnection();
                                 break;
                             }
                         }
                     }
-                    else if(request instanceof File)
-                    {
-                        switch (mQuery)
-                        {
-                            case (DeleteFile):
-                            {
-                             break;
-                            }
-                        }
-                    }
                     else if(request instanceof  byte[])
                     {
-                        receiveFile((byte[]) request);
+                        fh.receiveFile((byte[]) request);
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
@@ -84,63 +78,46 @@ public class ClientHandler implements Command {
 
 
 
-    private void sendFile(String fileName) throws IOException {
+//    private void sendFile(String fileName) throws IOException {
+//
+//        System.out.println("send: "+ fileName);
+//
+//        sendMessage(SendFile + fileName);
+//
+//        FileInputStream fin = new FileInputStream(mClient.getFolder()+"\\"+fileName);
+//
+//        byte[] buffer = new byte[fin.available()];
+//
+//        System.out.println(buffer.length);
+//
+//        fin.read(buffer, 0, fin.available());
+//        fin.close();
+//        out.writeObject(buffer);
+//        out.flush();
+//
+//        deleteFile(fileName);
+//
+//        sendFileList();
+//    }
 
-        System.out.println("send: "+ fileName);
 
-        sendMessage(SendFile + fileName);
 
-        FileInputStream fin = new FileInputStream(mClient.getFolder()+"\\"+fileName);
-
-        byte[] buffer = new byte[fin.available()];
-
-        System.out.println(buffer.length);
-
-        fin.read(buffer, 0, fin.available());
-        fin.close();
-        out.writeObject(buffer);
-        out.flush();
-
-        deleteFile(fileName);
-
-        sendFileList();
-    }
-
-    private void receiveFile(byte[] request) throws IOException
-    {
-        System.out.println("receive: " + mFile + " " + request.length);
-
-        File file = new File(mClient.getFolder() + "\\" + mFile);
-        file.createNewFile();
-        FileOutputStream fos = new FileOutputStream(file.getPath());
-        try
-        {
-            fos.write(request, 0, request.length);
-        }
-        catch (IOException ex)
-        {
-            file.delete();
-            System.out.println(ex.getMessage());
-        }
-        fos.close();
-        mFile = null;
-        sendFileList();
-    }
-
-    private void deleteFile(String fileName)
-    {
-
-        if(new File(mClient.getFolder() + "\\"+fileName).delete())
-            System.out.println("удален");
-        else
-            System.out.println("не удален");
-
-    }
-    public void sendFileList()
-    {
-        sendMessage(FileList);
-        sendMessage(mClient.getFolder());
-    }
+//    private void deleteFile(String fileName)
+//    {
+//
+//        if(new File(mClient.getFolder() + "\\"+fileName).delete())
+//            System.out.println("удален");
+//        else
+//            System.out.println("не удален");
+//
+//    }
+//
+//
+//    public void sendFileList()
+//    {
+//        sendMessage(FileList);
+//        sendMessage(mClient.getFolder());
+//    }
 
     public void sendMessage(Object msg)
     {
@@ -157,7 +134,7 @@ public class ClientHandler implements Command {
     }
 
 
-    public Object receiveMessage()
+    private Object receiveMessage()
     {
         if(socket.isClosed()
                 ||socket==null)return null;
@@ -170,7 +147,7 @@ public class ClientHandler implements Command {
     }
 
 
-    public void stopConnection()
+    private void stopConnection()
     {
         mClient = null;
         mQuery = null;

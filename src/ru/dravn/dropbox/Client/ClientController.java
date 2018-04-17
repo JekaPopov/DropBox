@@ -155,14 +155,14 @@ public class ClientController implements Initializable, Command {
                                     mQuery = FileList;
                                     break;
                                 }
-                                case (AlertMessage):
-                                {
-                                    showAlert(data);
-                                    break;
-                                }
                                 case (SendFile):
                                 {
                                     mFile = data[1];
+                                    break;
+                                }
+                                case (AlertMessage):
+                                {
+                                    showAlert(data);
                                     break;
                                 }
                                 case(Close_Connection):
@@ -258,7 +258,7 @@ public class ClientController implements Initializable, Command {
     }
 
     private void sendFile(String fileName) throws IOException {
-        sendMessage(ReceiveFile + fileName);
+        sendMessage(ReceiveFile + " "+fileName);
 
         FileInputStream fin = new FileInputStream(mClient.getFolder()+"\\"+fileName);
 
@@ -317,7 +317,6 @@ public class ClientController implements Initializable, Command {
             {
                 connect();
             }
-
             out.writeObject(msg);
             out.flush();
         }
@@ -392,7 +391,7 @@ public class ClientController implements Initializable, Command {
 
     private void loadFile(String selectedItem) {
         System.out.println(mFileList +"\\"+ selectedItem);
-        sendMessage(GetFile+selectedItem);
+        sendMessage(GetFile+" "+selectedItem);
         //sendMessage(new File(mFileList +"\\"+ selectedItem) );
     }
 

@@ -57,9 +57,13 @@ public class Authorization implements Command{
         {
             File folder = new File(AuthService.getFolder(login));
             mClient = new ServerClient(login, folder);
+
             mHandler.setClient(mClient);
-            mHandler.sendMessage(AUTH_SUCCESSFUl + " "+mClient.getLogin());
-            mHandler.sendFileList();
+            mHandler.sendMessage(AuthSuccessful + " "+mClient.getLogin());
+
+
+            mHandler.fh = new FileHandler(mHandler, folder);
+            mHandler.fh.sendFileList();
             mHandler.getServer().subscribe(mHandler);
 
             return true;

@@ -9,9 +9,9 @@ public interface Command
     String AuthSuccessful = "/authok";
     String AlertMessage = "/alert";
 
-    String GetFile = "/getFile ";
-    String ReceiveFile = "/receiveFile ";
-    String DeleteFile = "/deleteFile ";
-    String SendFile = "/sendFile ";
+    String GetFile = "/getFile";
+    String ReceiveFile = "/receiveFile";
+    String DeleteFile = "/deleteFile";
+    String SendFile = "/sendFile";
     String FileList = "/fileList";
 }
