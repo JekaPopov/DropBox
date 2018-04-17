@@ -1,9 +1,14 @@
 package ru.dravn.dropbox.Client;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.stage.Stage;
 
 public class ClientStart extends Application {
@@ -14,6 +19,7 @@ public class ClientStart extends Application {
         primaryStage.setTitle("Чат");
         primaryStage.setScene(new Scene(root, 600, 400));
         primaryStage.show();
+
     }
 
 

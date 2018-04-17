@@ -8,17 +8,20 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.TextField;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
+import ru.dravn.dropbox.Common.Command;
 
+import java.beans.EventHandler;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 
-public class ClientController implements Initializable {
+public class ClientController implements Initializable, Command {
 
     @FXML
     HBox title;
@@ -98,6 +101,7 @@ public class ClientController implements Initializable {
                 }
             });
 
+
             clientFileList = FXCollections.observableArrayList();
             clientFileViewList.setItems(clientFileList);
             clientFileViewList.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
@@ -139,29 +143,29 @@ public class ClientController implements Initializable {
                             String[] data =((String) request).split("\\s");
                             switch (data[0])
                             {
-                                case("/authok"):
+                                case(AuthSuccessful):
                                 {
                                     setAuthorized(true);
                                     mClient = new Client(data[1]);
                                     fillClientFileList();
                                     break;
                                 }
-                                case ("/fileList"):
+                                case (FileList):
                                 {
-                                    mQuery = "/fileList";
+                                    mQuery = FileList;
                                     break;
                                 }
-                                case ("/alert"):
+                                case (AlertMessage):
                                 {
                                     showAlert(data);
                                     break;
                                 }
-                                case ("/sendFile"):
+                                case (SendFile):
                                 {
                                     mFile = data[1];
                                     break;
                                 }
-                                case("/end"):
+                                case(Close_Connection):
                                 {
                                     stopConnection();
                                     break;
@@ -172,7 +176,7 @@ public class ClientController implements Initializable {
                         {
                             switch(mQuery)
                             {
-                                case("/fileList"):
+                                case(FileList):
                                 {
                                     mFileList = (File)request;
                                     fillServerFileList();
@@ -209,12 +213,7 @@ public class ClientController implements Initializable {
 
     public void clientFileListClicked(MouseEvent mouseEvent)
     {
-
-        if(mouseEvent.isSecondaryButtonDown())
-        {
-            System.out.println("вторая");
-        }
-        else if ((mouseEvent.getClickCount() == 2))
+        if ((mouseEvent.getClickCount() == 2))
         {
             try
             {
@@ -233,10 +232,6 @@ public class ClientController implements Initializable {
         {
 
             loadFile(serverFileViewList.getSelectionModel().getSelectedItem());
-        }
-        else if(mouseEvent.getButton().name().equals("SECONDARY"))
-        {
-            System.out.println("вторая");
         }
     }
 
@@ -263,7 +258,7 @@ public class ClientController implements Initializable {
     }
 
     private void sendFile(String fileName) throws IOException {
-        sendMessage("/receiveFile " + fileName);
+        sendMessage(ReceiveFile + fileName);
 
         FileInputStream fin = new FileInputStream(mClient.getFolder()+"\\"+fileName);
 
@@ -356,11 +351,11 @@ public class ClientController implements Initializable {
 
         if(regCheck.isSelected())
         {
-            sendMessage("/reg " + loginField.getText() + " " + passField.getText());
+            sendMessage(Reg +" "+ loginField.getText() + " " + passField.getText());
         }
         else
         {
-            sendMessage("/auth " + loginField.getText() + " " + passField.getText());
+            sendMessage(Auth + " "+loginField.getText() + " " + passField.getText());
         }
         loginField.clear();
         passField.clear();
@@ -397,13 +392,13 @@ public class ClientController implements Initializable {
 
     private void loadFile(String selectedItem) {
         System.out.println(mFileList +"\\"+ selectedItem);
-        sendMessage("/getFile "+selectedItem);
+        sendMessage(GetFile+selectedItem);
         //sendMessage(new File(mFileList +"\\"+ selectedItem) );
     }
 
     public void exit()
     {
-        sendMessage("/end");
+        sendMessage(Close_Connection);
     }
 
     public void stopConnection()

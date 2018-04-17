@@ -1,9 +1,11 @@
 package ru.dravn.dropbox.Server;
 
+import ru.dravn.dropbox.Common.Command;
+
 import java.io.*;
 import java.net.Socket;
 
-public class ClientHandler {
+public class ClientHandler implements Command {
 
 
     private Server server;
@@ -40,17 +42,17 @@ public class ClientHandler {
 
                         switch (data[0])
                         {
-                            case ("/getFile"):
+                            case (GetFile):
                             {
                                 sendFile(data[1]);
                                 break;
                             }
-                            case ("/receiveFile"):
+                            case (ReceiveFile):
                             {
                                 mFile = data[1];
                                 break;
                             }
-                            case ("/end"):
+                            case (Close_Connection):
                             {
                                 stopConnection();
                                 break;
@@ -61,7 +63,7 @@ public class ClientHandler {
                     {
                         switch (mQuery)
                         {
-                            case ("/deleteFile"):
+                            case (DeleteFile):
                             {
                              break;
                             }
@@ -86,7 +88,7 @@ public class ClientHandler {
 
         System.out.println("send: "+ fileName);
 
-        sendMessage("/sendFile " + fileName);
+        sendMessage(SendFile + fileName);
 
         FileInputStream fin = new FileInputStream(mClient.getFolder()+"\\"+fileName);
 
@@ -136,7 +138,7 @@ public class ClientHandler {
     }
     public void sendFileList()
     {
-        sendMessage("/fileList");
+        sendMessage(FileList);
         sendMessage(mClient.getFolder());
     }
 
@@ -176,7 +178,7 @@ public class ClientHandler {
         try {
             onLine = false;
             System.out.println("ClientHandler.stopConnection");
-            sendMessage("/end");
+            sendMessage(Close_Connection);
             in.close();
             out.close();
             socket.close();

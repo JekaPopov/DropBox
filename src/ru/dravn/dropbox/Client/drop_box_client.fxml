@@ -30,4 +30,5 @@
     <ListView fx:id="clientFileViewList" managed="false" onMouseClicked="#clientFileListClicked" HBox.hgrow="ALWAYS" />
     </HBox>
 
+
 </VBox>

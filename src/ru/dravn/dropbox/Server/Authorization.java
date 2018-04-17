@@ -1,29 +1,30 @@
 package ru.dravn.dropbox.Server;
 
+import ru.dravn.dropbox.Common.Command;
+
 import java.io.File;
 
-public class Authorization {
+public class Authorization implements Command{
 
     private ClientHandler mHandler;
     private ServerClient mClient;
-    private long mTime;
 
-    public Authorization(ClientHandler handler) {
+    public Authorization(ClientHandler handler)
+    {
         this.mHandler = handler;
     }
 
     public boolean runAuth(Object msg)
     {
-        mTime = System.currentTimeMillis();
         if((msg!=null)&&(msg instanceof  String))
         {
             String[] data = ((String)msg).split("\\s");
 
-            if(data[0].equals("/reg"))
+            if(data[0].equals(Reg))
             {
                 if(registration(data[1],data[2])) return true;
             }
-            else if(data[0].equals("/auth"))
+            else if(data[0].equals(Auth))
             {
                 if(authAnswer(data[1], data[2]))  return true;
             }
@@ -33,7 +34,7 @@ public class Authorization {
 
     private boolean registration(String login , String pass)
     {
-        System.out.println("reg: "+ login +" "+ pass);
+        System.out.println(Reg + login +" "+ pass);
         if(AuthService.registration(login, pass))
         {
             if(authAnswer(login,pass))
@@ -44,7 +45,7 @@ public class Authorization {
         }
         else
         {
-            mHandler.sendMessage("/alert Учетная запись занята");
+            mHandler.sendMessage(AlertMessage + " Учетная запись занята");
         }
         return false;
     }
@@ -57,16 +58,15 @@ public class Authorization {
             File folder = new File(AuthService.getFolder(login));
             mClient = new ServerClient(login, folder);
             mHandler.setClient(mClient);
-            mHandler.sendMessage("/authok " + mClient.getLogin());
+            mHandler.sendMessage(AUTH_SUCCESSFUl + " "+mClient.getLogin());
             mHandler.sendFileList();
             mHandler.getServer().subscribe(mHandler);
 
-            mTime = 0;
             return true;
         }
         else
         {
-            mHandler.sendMessage("/alert Hе верный логин или пароль");
+            mHandler.sendMessage(AlertMessage + " Hе верный логин или пароль");
         }
         return false;
     }

@@ -1,6 +1,5 @@
 package ru.dravn.dropbox.Server;
 
-import java.io.File;
 import java.sql.*;
 
 public class AuthService {
@@ -32,7 +31,7 @@ public class AuthService {
         System.out.println("Таблица создана или уже существует.");
     }
 
-    public static void WriteDB() throws SQLException
+    private static void WriteDB() throws SQLException
     {
         stmt.execute("INSERT INTO USERS (LOGIN, PASS, FOLDER) " +
                 "VALUES ('log1', 'pass1', 'C:\\_serv\\log1'); ");
