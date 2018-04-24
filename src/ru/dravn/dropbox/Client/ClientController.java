@@ -43,13 +43,14 @@ public class ClientController implements Initializable, Command {
     CheckBox regCheck;
 
     private Socket socket;
-    private ObjectOutputStream out;
+    protected ObjectOutputStream out;
     private ObjectInputStream in;
     private Client mClient;
     private boolean onLine;
     private String mFile;
+    private ClientFileHandler mFileHandler;
     private String mQuery;
-    private File mFileList;
+    protected File mFileList;
 
     private ObservableList<String> serverFileList;
     private ObservableList<String> clientFileList;
@@ -147,6 +148,7 @@ public class ClientController implements Initializable, Command {
                                 {
                                     setAuthorized(true);
                                     mClient = new Client(data[1]);
+                                    mFileHandler = new ClientFileHandler(this, mClient.getFolder());
                                     fillClientFileList();
                                     break;
                                 }
@@ -157,7 +159,7 @@ public class ClientController implements Initializable, Command {
                                 }
                                 case (SendFile):
                                 {
-                                    mFile = data[1];
+                                    mFileHandler.setReciveFile(data[1]);
                                     break;
                                 }
                                 case (AlertMessage):
@@ -174,21 +176,13 @@ public class ClientController implements Initializable, Command {
                         }
                         else if(request instanceof File)
                         {
-                            switch(mQuery)
-                            {
-                                case(FileList):
-                                {
                                     mFileList = (File)request;
                                     fillServerFileList();
                                     mQuery = null;
-                                    break;
-                                }
-
-                            }
                         }
                         else if(request instanceof  byte[])
                         {
-                            receiveFile((byte[]) request);
+                            mFileHandler.receiveFile((byte[]) request);
                         }
                     }
                 }
@@ -217,7 +211,7 @@ public class ClientController implements Initializable, Command {
         {
             try
             {
-                sendFile(clientFileViewList.getSelectionModel().getSelectedItem());
+                mFileHandler.sendFile(clientFileViewList.getSelectionModel().getSelectedItem());
             }
             catch (IOException e)
             {
@@ -231,61 +225,12 @@ public class ClientController implements Initializable, Command {
         if ((mouseEvent.getClickCount() == 2))
         {
 
-            loadFile(serverFileViewList.getSelectionModel().getSelectedItem());
+            mFileHandler.loadFile(serverFileViewList.getSelectionModel().getSelectedItem());
         }
     }
 
-    private void receiveFile(byte[] request) throws IOException
-    {
-        System.out.println("receive: "+mFile+" "+request.length);
 
-        File file = new File(mClient.getFolder()+"\\"+mFile);
-        file.createNewFile();
-        FileOutputStream fos=new FileOutputStream(file.getPath());
-        try
-        {
-            fos.write(request, 0, request.length);
-        }
-        catch(IOException ex){
-            file.delete();
-            System.out.println(ex.getMessage());
-        }
-
-        fos.close();
-        mFile = null;
-        fillClientFileList();
-        fillServerFileList();
-    }
-
-    private void sendFile(String fileName) throws IOException {
-        sendMessage(ReceiveFile + " "+fileName);
-
-        FileInputStream fin = new FileInputStream(mClient.getFolder()+"\\"+fileName);
-
-        byte[] buffer = new byte[fin.available()];
-
-        System.out.println("send: "+ fileName +" "+ buffer.length);
-
-        fin.read(buffer, 0, fin.available());
-        out.writeObject(buffer);
-        out.flush();
-
-        fin.close();
-        deleteFile(fileName);
-        fillClientFileList();
-        fillServerFileList();
-        mQuery = null;
-    }
-
-    private void deleteFile(String fileName)
-    {
-        if(new File(mClient.getFolder() + "\\"+fileName).delete())
-            System.out.println("удален");
-        else
-            System.out.println("не удален");
-    }
-
-    private void fillServerFileList() {
+    protected void fillServerFileList() {
         Platform.runLater(() -> {
             serverFileList.clear();
 
@@ -296,7 +241,7 @@ public class ClientController implements Initializable, Command {
             });
     }
 
-    private void fillClientFileList() {
+    protected void fillClientFileList() {
         Platform.runLater(() -> {
             clientFileList.clear();
 
@@ -308,7 +253,7 @@ public class ClientController implements Initializable, Command {
     }
 
 
-    private void sendMessage(Object msg)
+    protected void sendMessage(Object msg)
     {
         try
         {
@@ -335,6 +280,7 @@ public class ClientController implements Initializable, Command {
             return in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
+            showAlert("Ошибка приема сообщения");
         }
         return null;
     }
@@ -387,13 +333,6 @@ public class ClientController implements Initializable, Command {
         serverFileViewList.setManaged(authorized);
     }
 
-
-
-    private void loadFile(String selectedItem) {
-        System.out.println(mFileList +"\\"+ selectedItem);
-        sendMessage(GetFile+" "+selectedItem);
-        //sendMessage(new File(mFileList +"\\"+ selectedItem) );
-    }
 
     public void exit()
     {

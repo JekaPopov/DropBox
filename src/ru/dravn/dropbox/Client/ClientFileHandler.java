@@ -1,0 +1,83 @@
+package ru.dravn.dropbox.Client;
+
+import ru.dravn.dropbox.Common.Command;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+public class ClientFileHandler implements Command {
+
+    private ClientController mController;
+    private File mFolder;
+
+
+
+    private String mReciveFile;
+
+
+    public ClientFileHandler(ClientController controller, File folder) {
+        mController = controller;
+        mFolder = folder;
+    }
+
+    protected void receiveFile(byte[] request) throws IOException
+    {
+        System.out.println("receive: "+mReciveFile+" "+request.length);
+
+        File file = new File(mFolder+"\\"+mReciveFile);
+        file.createNewFile();
+        FileOutputStream fos=new FileOutputStream(file.getPath());
+        try
+        {
+            fos.write(request, 0, request.length);
+        }
+        catch(IOException ex){
+            file.delete();
+            System.out.println(ex.getMessage());
+        }
+
+        fos.close();
+        mReciveFile = null;
+        mController.fillClientFileList();
+        mController.fillServerFileList();
+    }
+
+    protected void sendFile(String fileName) throws IOException {
+        mController.sendMessage(ReceiveFile + " "+fileName);
+
+        FileInputStream fin = new FileInputStream(mFolder+"\\"+fileName);
+
+        byte[] buffer = new byte[fin.available()];
+
+        System.out.println("send: "+ fileName +" "+ buffer.length);
+
+        fin.read(buffer, 0, fin.available());
+        mController.out.writeObject(buffer);
+        mController.out.flush();
+
+        fin.close();
+        deleteFile(fileName);
+        mController.fillClientFileList();
+        mController.fillServerFileList();
+
+    }
+
+    private void deleteFile(String fileName)
+    {
+        if(new File(mFolder + "\\"+fileName).delete())
+            System.out.println("удален");
+        else
+            System.out.println("не удален");
+    }
+
+    protected void loadFile(String selectedItem) {
+        System.out.println(mController.mFileList +"\\"+ selectedItem);
+        mController.sendMessage(GetFile+" "+selectedItem);
+    }
+
+    public void setReciveFile(String reciveFile) {
+        mReciveFile = reciveFile;
+    }
+}

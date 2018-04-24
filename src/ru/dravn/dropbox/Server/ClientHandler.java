@@ -13,9 +13,7 @@ public class ClientHandler implements Command {
     private ObjectInputStream in;
     public ObjectOutputStream out;
     private boolean onLine;
-    private String mQuery;
-    private String mFile;
-    private ServerClient mClient;
+    //private ServerClient mClient;
     public FileHandler fh;
 
     ClientHandler(Server server, Socket socket)
@@ -38,7 +36,7 @@ public class ClientHandler implements Command {
 
                 while (onLine)
                 {
-                    Object request = in.readObject();
+                    Object request = receiveMessage();
 
                     if (request instanceof String)
                     {
@@ -77,80 +75,28 @@ public class ClientHandler implements Command {
     }
 
 
+    public void sendMessage(Object msg) throws IOException {
 
-//    private void sendFile(String fileName) throws IOException {
-//
-//        System.out.println("send: "+ fileName);
-//
-//        sendMessage(SendFile + fileName);
-//
-//        FileInputStream fin = new FileInputStream(mClient.getFolder()+"\\"+fileName);
-//
-//        byte[] buffer = new byte[fin.available()];
-//
-//        System.out.println(buffer.length);
-//
-//        fin.read(buffer, 0, fin.available());
-//        fin.close();
-//        out.writeObject(buffer);
-//        out.flush();
-//
-//        deleteFile(fileName);
-//
-//        sendFileList();
-//    }
+        if(socket.isClosed()) throw new IOException();
 
-
-
-//    private void deleteFile(String fileName)
-//    {
-//
-//        if(new File(mClient.getFolder() + "\\"+fileName).delete())
-//            System.out.println("удален");
-//        else
-//            System.out.println("не удален");
-//
-//    }
-//
-//
-//    public void sendFileList()
-//    {
-//        sendMessage(FileList);
-//        sendMessage(mClient.getFolder());
-//    }
-
-    public void sendMessage(Object msg)
-    {
-        if(socket.isClosed())return;
-        try
-        {
             out.writeObject(msg);
             out.flush();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+
+
     }
 
 
-    private Object receiveMessage()
-    {
+    private Object receiveMessage() throws IOException, ClassNotFoundException {
         if(socket.isClosed()
-                ||socket==null)return null;
-            try {
-                return in.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        return null;
+                ||socket==null) throw new IOException();
+
+        return in.readObject();
+
     }
 
 
     private void stopConnection()
     {
-        mClient = null;
-        mQuery = null;
         server.unSubscribe(ClientHandler.this);
         try {
             onLine = false;
@@ -169,7 +115,5 @@ public class ClientHandler implements Command {
         return server;
     }
 
-    public void setClient(ServerClient client) {
-        mClient = client;
-    }
+
 }

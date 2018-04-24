@@ -3,6 +3,7 @@ package ru.dravn.dropbox.Server;
 import ru.dravn.dropbox.Common.Command;
 
 import java.io.File;
+import java.io.IOException;
 
 public class Authorization implements Command{
 
@@ -14,8 +15,8 @@ public class Authorization implements Command{
         this.mHandler = handler;
     }
 
-    public boolean runAuth(Object msg)
-    {
+    public boolean runAuth(Object msg) throws IOException {
+
         if((msg!=null)&&(msg instanceof  String))
         {
             String[] data = ((String)msg).split("\\s");
@@ -32,8 +33,7 @@ public class Authorization implements Command{
         return false;
     }
 
-    private boolean registration(String login , String pass)
-    {
+    private boolean registration(String login , String pass) throws IOException {
         System.out.println(Reg + login +" "+ pass);
         if(AuthService.registration(login, pass))
         {
@@ -51,14 +51,12 @@ public class Authorization implements Command{
     }
 
 
-    private boolean authAnswer(String login, String pass)
-    {
+    private boolean authAnswer(String login, String pass) throws IOException {
         if (AuthService.login(login, pass))
         {
             File folder = new File(AuthService.getFolder(login));
             mClient = new ServerClient(login, folder);
 
-            mHandler.setClient(mClient);
             mHandler.sendMessage(AuthSuccessful + " "+mClient.getLogin());
 
 

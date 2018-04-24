@@ -81,8 +81,7 @@ public class FileHandler implements Command
     }
 
 
-    public void sendFileList()
-    {
+    public void sendFileList() throws IOException {
         mClientHandler.sendMessage(FileList);
         mClientHandler.sendMessage(mFolder);
     }
