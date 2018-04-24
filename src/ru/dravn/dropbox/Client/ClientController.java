@@ -4,6 +4,7 @@ package ru.dravn.dropbox.Client;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -11,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import ru.dravn.dropbox.Common.Command;
 
@@ -18,6 +20,7 @@ import java.beans.EventHandler;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 
@@ -57,6 +60,7 @@ public class ClientController implements Initializable, Command {
 
     private final String SERVER_IP = "localhost";
     private final int SERVER_PORT = 8189;
+    private String chosenFile;
 
 
     @Override
@@ -172,13 +176,17 @@ public class ClientController implements Initializable, Command {
                                     stopConnection();
                                     break;
                                 }
+                                default:
+                                {
+                                    break;
+                                }
                             }
                         }
                         else if(request instanceof File)
                         {
-                                    mFileList = (File)request;
-                                    fillServerFileList();
-                                    mQuery = null;
+                            mFileList = (File)request;
+                            fillServerFileList();
+                            mQuery = null;
                         }
                         else if(request instanceof  byte[])
                         {
@@ -207,7 +215,11 @@ public class ClientController implements Initializable, Command {
 
     public void clientFileListClicked(MouseEvent mouseEvent)
     {
-        if ((mouseEvent.getClickCount() == 2))
+        if(mouseEvent.getClickCount() == 1)
+        {
+            showDialog(clientFileViewList.getSelectionModel().getSelectedItem(), "client");
+        }
+        else if (mouseEvent.getClickCount() == 2)
         {
             try
             {
@@ -222,9 +234,12 @@ public class ClientController implements Initializable, Command {
 
     public void serverFileListClicked(MouseEvent mouseEvent)
     {
-        if ((mouseEvent.getClickCount() == 2))
+        if(mouseEvent.getClickCount() == 1)
         {
-
+            showDialog(serverFileViewList.getSelectionModel().getSelectedItem(),"server");
+        }
+        else if ((mouseEvent.getClickCount() == 2))
+        {
             mFileHandler.loadFile(serverFileViewList.getSelectionModel().getSelectedItem());
         }
     }
@@ -238,7 +253,7 @@ public class ClientController implements Initializable, Command {
             {
                 serverFileList.addAll(mFileList.list());
             }
-            });
+        });
     }
 
     protected void fillClientFileList() {
@@ -320,6 +335,63 @@ public class ClientController implements Initializable, Command {
         });
     }
 
+    private void showDialog(String selectedItem, String type)
+    {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Выберите действие с файлом");
+            alert.setHeaderText("Выберите действие с файлом "+ selectedItem);
+            alert.setContentText(null);
+
+
+            ButtonType buttonSend = new ButtonType("Передать");
+            ButtonType buttonDelete = new ButtonType("Удалить");
+            ButtonType buttonRename = new ButtonType("Переименовать");
+            ButtonType buttonProperties = new ButtonType("Свойства");
+            ButtonType buttonTypeCancel = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+            alert.getButtonTypes().setAll(buttonSend, buttonDelete, buttonRename,buttonProperties, buttonTypeCancel);
+
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == buttonSend)
+            {
+                if(type.equals("server"))
+                {
+                    mFileHandler.loadFile(selectedItem);
+                }
+                else
+                {
+                    try {
+                        mFileHandler.sendFile(clientFileViewList.getSelectionModel().getSelectedItem());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            else if (result.get() == buttonDelete)
+            {
+               if(type.equals("server"))
+               {
+                   sendMessage(DeleteFile + " "+selectedItem);
+               }
+               else
+               {
+                   mFileHandler.deleteFile(selectedItem);
+               }
+            }
+            else if (result.get() == buttonRename) {
+                mFileHandler.rename(selectedItem);
+            }
+            else if (result.get() == buttonProperties) {
+                mFileHandler.properties(selectedItem);
+            } else {
+                alert.close();
+            }
+
+        });
+    }
+
     private void setAuthorized(boolean authorized)
     {
         authorizedPanel.setVisible(!authorized);
@@ -358,6 +430,7 @@ public class ClientController implements Initializable, Command {
             e.printStackTrace();
         }
     }
+
 
 }
 

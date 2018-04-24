@@ -72,12 +72,14 @@ public class ClientFileHandler implements Command {
 
     }
 
-    private void deleteFile(String fileName)
+    protected void deleteFile(String fileName)
     {
-        if(new File(mFolder + "\\"+fileName).delete())
-            System.out.println("удален");
+        if(new File(mFolder + "\\"+fileName).delete()) {
+            mController.fillClientFileList();
+            System.out.println(mFolder + "\\"+fileName +" удален");
+        }
         else
-            System.out.println("не удален");
+            System.out.println(mFolder + "\\"+fileName + "не удален");
     }
 
     protected void loadFile(String selectedItem) {
@@ -87,5 +89,12 @@ public class ClientFileHandler implements Command {
 
     public void setReciveFile(String reciveFile) {
         mReciveFile = reciveFile;
+    }
+
+   
+    public void properties(String selectedItem) {
+    }
+
+    public void rename(String selectedItem) {
     }
 }

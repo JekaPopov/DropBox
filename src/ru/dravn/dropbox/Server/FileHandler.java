@@ -79,14 +79,14 @@ public class FileHandler implements Command
     }
 
 
-    private void deleteFile(String fileName)
-    {
+    protected void deleteFile(String fileName) throws IOException {
 
         if(new File(mFolder + "\\"+fileName).delete())
-            System.out.println("удален");
+            System.out.println(mFolder + "\\"+fileName+" удален");
         else
-            System.out.println("не удален");
+            System.out.println(mFolder + "\\"+fileName+" не удален" );
 
+        sendFileList();
     }
 
 

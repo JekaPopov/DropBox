@@ -13,7 +13,6 @@ public class ClientHandler implements Command {
     private ObjectInputStream in;
     public ObjectOutputStream out;
     private boolean onLine;
-    //private ServerClient mClient;
     public FileHandler fh;
 
     ClientHandler(Server server, Socket socket)
@@ -54,9 +53,18 @@ public class ClientHandler implements Command {
                                 fh.setReciveFile(data[1]);
                                 break;
                             }
+                            case DeleteFile:
+                            {
+                                fh.deleteFile(data[1]);
+                                break;
+                            }
                             case Close_Connection:
                             {
                                 stopConnection();
+                                break;
+                            }
+                            default:
+                            {
                                 break;
                             }
                         }
