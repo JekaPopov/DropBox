@@ -78,15 +78,37 @@ public class FileHandler implements Command
         sendFileList();
     }
 
+    public void rename(String oldName, String newName) throws IOException {
+
+        if(new File(mFolder + "\\"+oldName)
+                .renameTo(new File(mFolder + "\\"+newName))) {
+
+            System.out.println(mFolder + "\\"+oldName +" перименован в "+mFolder + "\\"+newName);
+            sendFileList();
+        }
+        else
+        {
+            System.out.println(mFolder + "\\" + oldName + " не перименован");
+            mClientHandler.sendMessage(AlertMessage +" " + oldName + " не перименован");
+        }
+
+    }
 
     protected void deleteFile(String fileName) throws IOException {
 
         if(new File(mFolder + "\\"+fileName).delete())
+        {
             System.out.println(mFolder + "\\"+fileName+" удален");
+            sendFileList();
+        }
         else
-            System.out.println(mFolder + "\\"+fileName+" не удален" );
+        {
+            System.out.println(mFolder + "\\" + fileName + " не удален");
 
-        sendFileList();
+            mClientHandler.sendMessage(AlertMessage + mFolder + "\\" + fileName + " не удален");
+        }
+
+
     }
 
 

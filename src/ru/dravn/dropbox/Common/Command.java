@@ -12,6 +12,7 @@ public interface Command
     String GetFile = "/getFile";
     String ReceiveFile = "/receiveFile";
     String DeleteFile = "/deleteFile";
+    String RenameFile = "/renameFile";
     String SendFile = "/sendFile";
     String FileList = "/fileList";
 }

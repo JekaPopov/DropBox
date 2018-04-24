@@ -45,17 +45,23 @@ public class ClientHandler implements Command {
                         {
                             case GetFile:
                             {
-                                fh.sendFile(data[1]);
+                                fh.sendFile(((String) request).replace(GetFile+" ", ""));
                                 break;
                             }
                             case ReceiveFile:
                             {
-                                fh.setReciveFile(data[1]);
+                                fh.setReciveFile(((String) request).replace(ReceiveFile+" ", ""));
                                 break;
                             }
                             case DeleteFile:
                             {
-                                fh.deleteFile(data[1]);
+                                fh.deleteFile(((String) request).replace(DeleteFile+" ", ""));
+                                break;
+                            }
+                            case RenameFile:
+                            {
+                                fh.rename(data[1],data[2]);
+
                                 break;
                             }
                             case Close_Connection:

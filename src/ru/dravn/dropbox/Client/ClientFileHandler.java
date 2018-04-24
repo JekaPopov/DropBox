@@ -1,11 +1,14 @@
 package ru.dravn.dropbox.Client;
 
+import javafx.application.Platform;
+import javafx.scene.control.TextInputDialog;
 import ru.dravn.dropbox.Common.Command;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Optional;
 
 public class ClientFileHandler implements Command {
 
@@ -87,14 +90,27 @@ public class ClientFileHandler implements Command {
         mController.sendMessage(GetFile+" "+selectedItem);
     }
 
+    public void rename(String oldName, String newName)
+    {
+
+        if(new File(mFolder + "\\"+oldName)
+                .renameTo(new File(mFolder + "\\"+newName))) {
+            mController.fillClientFileList();
+
+            System.out.println(mFolder + "\\"+oldName +" перименован в "+mFolder + "\\"+newName);
+        }
+        else
+        {
+            mController.showAlert(oldName + " Файл не переименован");
+            System.out.println(mFolder + "\\" + oldName + " не перименован");
+        }
+    }
+
+
     public void setReciveFile(String reciveFile) {
         mReciveFile = reciveFile;
     }
 
    
-    public void properties(String selectedItem) {
-    }
 
-    public void rename(String selectedItem) {
-    }
 }

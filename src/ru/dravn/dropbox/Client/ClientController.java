@@ -4,22 +4,20 @@ package ru.dravn.dropbox.Client;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.TextField;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import ru.dravn.dropbox.Common.Command;
 
-import java.beans.EventHandler;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -163,12 +161,12 @@ public class ClientController implements Initializable, Command {
                                 }
                                 case (SendFile):
                                 {
-                                    mFileHandler.setReciveFile(data[1]);
+                                    mFileHandler.setReciveFile(((String) request).replace(SendFile+" ", ""));
                                     break;
                                 }
                                 case (AlertMessage):
                                 {
-                                    showAlert(data);
+                                    showAlert(((String) request).replace(AlertMessage, ""));
                                     break;
                                 }
                                 case(Close_Connection):
@@ -321,16 +319,14 @@ public class ClientController implements Initializable, Command {
         passField.clear();
     }
 
-    private void showAlert(String ... msg)
+    protected void showAlert(String msg)
     {
-        for (int i = 2; i <msg.length ; i++) {
-            msg[1]+=msg[i]+" ";
-        }
         Platform.runLater(() -> {
             Alert alert =new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Возникли проблемы");
             alert.setHeaderText(null);
-            alert.setContentText(msg[1]);
+
+            alert.setContentText(msg);
             alert.showAndWait();
         });
     }
@@ -381,15 +377,69 @@ public class ClientController implements Initializable, Command {
                }
             }
             else if (result.get() == buttonRename) {
-                mFileHandler.rename(selectedItem);
+                showRenameDialog(selectedItem, type);
             }
             else if (result.get() == buttonProperties) {
-                mFileHandler.properties(selectedItem);
+                showPropertiesDialog(selectedItem, type);
             } else {
                 alert.close();
             }
 
         });
+    }
+
+    private void showRenameDialog(String oldName, String type)
+    {
+        Platform.runLater(() -> {
+            TextInputDialog dialog = new TextInputDialog(oldName);
+            dialog.setTitle("Преименование файла");
+            dialog.setHeaderText("Переименование файла "+ oldName);
+            dialog.setContentText("Введите новое имя:");
+
+            Optional<String> result = dialog.showAndWait();
+
+            result.ifPresent(newName -> {
+                if(type.equals("server"))
+                {
+                    sendMessage(RenameFile + " "+oldName + " "+ newName);
+                }
+                else
+                {
+                    mFileHandler.rename(oldName, newName);
+                }
+            });
+        });
+    }
+
+    private void showPropertiesDialog(String name, String type)
+    {
+        Platform.runLater(() -> {
+            File file;
+            Alert dialog = new Alert(Alert.AlertType.INFORMATION);
+            dialog.setTitle("Свойства файла");
+            dialog.setHeaderText("Свойства файла " + name);
+
+            if (type.equals("server")) {
+                file = new File(mFileList, name);
+            } else {
+                file = new File(mClient.getFolder(), name);
+            }
+
+            DateFormat TIMESTAMP = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            dialog.setContentText("Расположение: " + file.getAbsolutePath() + "\n" +
+                    "Размер: " + humanReadableByteCount(file.length(),true) + "\n" +
+                    "Создан: " + TIMESTAMP.format(file.lastModified()));
+            dialog.showAndWait();
+        });
+    }
+
+    public static String humanReadableByteCount(long bytes, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
     private void setAuthorized(boolean authorized)
