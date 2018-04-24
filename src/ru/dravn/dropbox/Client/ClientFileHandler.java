@@ -26,6 +26,14 @@ public class ClientFileHandler implements Command {
     {
         System.out.println("receive: "+mReciveFile+" "+request.length);
 
+        int i=1;
+        while (new File(mFolder+"\\"+mReciveFile).exists())
+        {
+            String[] data = mReciveFile.split("\\.");
+            String[] data1 = data[0].split("\\(");
+            mReciveFile = data1[0]+"("+(i++)+")."+data[1];
+        }
+
         File file = new File(mFolder+"\\"+mReciveFile);
         file.createNewFile();
         FileOutputStream fos=new FileOutputStream(file.getPath());
